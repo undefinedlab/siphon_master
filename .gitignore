@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+.venv/
+.venv-*/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build / cache
+.next/
+.next-dev/
+dist/
+build/
+out/
+coverage/
+.turbo/
+.cache/
+target/
+target-sbf/
+target-sbf-*/
+.platform-tools*/
+.sbf-cache/
+cache/
+broadcast/
+*.tsbuildinfo
+
+# Secrets / local env (examples + templates are kept)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.devnet
+.env.solana
+.env.anvil
+.env.hyperevm-testnet
+!.env.example
+!.env.*.example
+!.env.prod.template
+
+# Keys / certs
+*.pem
+*.key
+id_rsa
+id_ed25519
+
+# Databases / runtime
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# local history builder
+_build_history.ps1
+
+
+# local history builder
+_build_history.ps1
+
