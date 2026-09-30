@@ -1,0 +1,9 @@
+{
+  "_comment": "BN254 field elements. Finalize before mainnet; all implementations must match.",
+  "DOMAIN_SMT_KEY": "1",
+  "DOMAIN_SMT_LEAF": "2",
+  "DOMAIN_VAULT_SCOPE": "3",
+  "DOMAIN_PAYEE": "4",
+  "DOMAIN_CHAIN_EVM": "5",
+  "DOMAIN_CHAIN_SOL": "6"
+}

@@ -1,0 +1,15 @@
+out
+cache
+lib
+broadcast
+node_modules
+target
+.anchor
+**/*.rs.bk
+.env
+evm/poseidon_t3.hex
+evm/poseidon_t3.binhex
+evm/poseidon_t4.hex
+evm/sol_token.txt
+*.log
+.vscode

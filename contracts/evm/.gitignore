@@ -1,0 +1,9 @@
+# forge-std
+out/
+cache/
+broadcast/
+lib/
+node_modules/
+.env
+*.swp
+.DS_Store

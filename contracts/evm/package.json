@@ -1,0 +1,20 @@
+{
+  "name": "siphon-contracts-v2-evm",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Siphon v3 VaultKernel — Foundry",
+  "scripts": {
+    "test": "forge test",
+    "test:env": "node scripts/deploymentEnv.test.cjs",
+    "test:docs": "node scripts/docs-alignment.test.cjs",
+    "deploy:simulate": "forge script script/DeployVaultStack.s.sol:DeployVaultStack -vvv",
+    "deploy:local": "forge script script/DeployVaultStack.s.sol:DeployVaultStack --rpc-url http://127.0.0.1:8545 --broadcast -vvv",
+    "deploy:verifiers": "forge script script/DeployActionVerifiers.s.sol:DeployActionVerifiers --broadcast -vvv",
+    "deploy:base-sepolia": "forge script script/DeployVaultStack.s.sol:DeployVaultStack --rpc-url base_sepolia --broadcast -vvv",
+    "deploy:sepolia": "forge script script/DeployVaultStack.s.sol:DeployVaultStack --rpc-url sepolia --broadcast -vvv",
+    "print:env": "node scripts/printDeploymentEnv.js"
+  },
+  "dependencies": {
+    "poseidon-solidity": "^0.0.5"
+  }
+}

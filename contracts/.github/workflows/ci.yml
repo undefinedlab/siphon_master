@@ -1,0 +1,26 @@
+name: siphon-contracts-v2 CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+      - name: Forge install
+        working-directory: evm
+        run: forge install foundry-rs/forge-std --no-commit
+      - name: Forge test
+        working-directory: evm
+        run: forge test -vv
+      - name: Docs alignment (F-2)
+        working-directory: evm
+        run: npm run test:docs
+      - name: Deployment env aliases
+        working-directory: evm
+        run: npm run test:env

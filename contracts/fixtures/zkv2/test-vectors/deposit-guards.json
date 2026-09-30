@@ -1,0 +1,15 @@
+{
+  "_comment": "PROTOCOL 3.4 §2.3 §2.7 — spend-core::deposit unit tests are the executable contract. This file documents the fail-closed cases.",
+  "rules": {
+    "amount": "note amount MUST equal measured token delta",
+    "salt": "userSalt MUST be non-zero",
+    "label": "vault mints label; user MUST NOT supply label calldata",
+    "asp": "duplicate ASP leaf MUST fail"
+  },
+  "cases": [
+    { "id": "ok", "measured": "1000", "claimed": "1000", "salt": "99", "userSuppliedLabel": false, "expect": "ok" },
+    { "id": "fake-amount", "measured": "1000", "claimed": "1000000", "salt": "99", "userSuppliedLabel": false, "expect": "AmountMismatch" },
+    { "id": "zero-salt", "measured": "1000", "claimed": "1000", "salt": "0", "userSuppliedLabel": false, "expect": "ZeroSalt" },
+    { "id": "borrow-label", "measured": "1000", "claimed": "1000", "salt": "99", "userSuppliedLabel": true, "expect": "UserSuppliedLabel" }
+  ]
+}

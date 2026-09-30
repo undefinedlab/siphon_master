@@ -1,0 +1,10 @@
+{
+  "action": "Withdraw",
+  "labelStatus": "Pending",
+  "labelInAsp": false,
+  "labelRevokedInSmt": false,
+  "admittedRootPublic": true,
+  "revokedRootPublic": true,
+  "expect": "fail",
+  "expectError": "NotAdmitted"
+}

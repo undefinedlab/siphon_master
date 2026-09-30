@@ -1,0 +1,10 @@
+{
+  "action": "Ragequit",
+  "labelStatus": "Admitted",
+  "labelInAsp": true,
+  "labelRevokedInSmt": false,
+  "admittedRootPublic": true,
+  "revokedRootPublic": true,
+  "expect": "fail",
+  "expectError": "RagequitWhileAdmitted"
+}
