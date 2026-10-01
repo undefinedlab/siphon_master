@@ -1,0 +1,21 @@
+# Anchor workspace for the retired scaffold only.
+# The product program is programs/siphon-vault-zk, built by scripts/deploy-devnet-zk.ps1.
+[toolchain]
+anchor_version = "0.30.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+siphon_vault = "Eip1D6GPh5hc3qrJVBcghd3W3KSPszqyRYbn6XPi9MWj"
+
+[programs.devnet]
+siphon_vault = "Eip1D6GPh5hc3qrJVBcghd3W3KSPszqyRYbn6XPi9MWj"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[workspace]
+members = ["programs/siphon-vault-onchain"]

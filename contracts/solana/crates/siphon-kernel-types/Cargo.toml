@@ -1,0 +1,12 @@
+[package]
+name = "siphon-kernel-types"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Chain-agnostic Siphon spend limb types and kernel checklist (no Solana/EVM deps)"
+
+[dependencies]
+thiserror = { workspace = true }
+
+[lib]
+path = "src/lib.rs"

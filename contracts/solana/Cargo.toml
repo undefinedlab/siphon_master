@@ -1,0 +1,20 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/siphon-kernel-types",
+    "programs/siphon-vault",
+]
+# BPF/Anchor crate — build with cargo-build-sbf / Anchor, not host workspace tests.
+exclude = [
+    "programs/siphon-vault-onchain",
+    "programs/siphon-vault-zk",
+]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+version = "0.1.0"
+
+[workspace.dependencies]
+siphon-kernel-types = { path = "crates/siphon-kernel-types" }
+thiserror = "1"

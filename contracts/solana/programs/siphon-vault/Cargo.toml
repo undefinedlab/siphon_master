@@ -1,0 +1,27 @@
+[package]
+name = "siphon-vault"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Siphon Solana vault — modular kernel + groth16-bn254-solana-altbn128-v1 verify port"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "siphon_vault"
+path = "src/lib.rs"
+
+[features]
+default = []
+# Enable when linking solana-program / Anchor for on-chain builds.
+on-chain = ["dep:groth16-solana"]
+scaffold-verify = []
+
+[dependencies]
+siphon-kernel-types = { workspace = true }
+thiserror = { workspace = true }
+light-poseidon = "0.4"
+ark-bn254 = "0.5"
+ark-ff = "0.5"
+num-bigint = "0.4"
+# Circom Groth16 over Solana alt_bn128 syscalls (Light Protocol).
+groth16-solana = { version = "0.2", optional = true }

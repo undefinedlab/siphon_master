@@ -1,0 +1,6 @@
+/target/
+**/*.rs.bk
+Cargo.lock
+# Program keypair — do not commit private bytes
+target/deploy/*-keypair.json
+devnet-program-id.txt
