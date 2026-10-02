@@ -1,0 +1,19 @@
+# The Dockerfile does `COPY . .`, so without this the developer's .env — private keys, API tokens,
+# and stale contract addresses — is baked into the image and shipped. It also silently outranked the
+# Compose environment, pinning the executor to a retired entrypoint.
+.env
+.env.*
+!.env.example
+
+# Never ship local state or caches into the image.
+*.db
+*.sqlite3
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+instance/
+.git/
+.DS_Store

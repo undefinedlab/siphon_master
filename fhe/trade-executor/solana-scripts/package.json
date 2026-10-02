@@ -1,0 +1,14 @@
+{
+  "name": "siphon-solana-scripts",
+  "private": true,
+  "description": "Node deps for relay-zk-withdraw, execute-zk-meteora, and execute-zk-jupiter-earn in the trade-executor image.",
+  "dependencies": {
+    "@jup-ag/lend": "^0.4.0",
+    "@meteora-ag/dlmm": "^1.9.4",
+    "@solana/spl-stake-pool": "^1.1.8",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
+    "bn.js": "^5.2.2",
+    "poseidon-lite": "^0.3.0"
+  }
+}

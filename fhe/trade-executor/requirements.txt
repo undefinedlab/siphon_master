@@ -1,0 +1,28 @@
+# Flask and extensions
+Flask==3.0.0
+Flask-Cors==4.0.0
+gunicorn==21.2.0
+python-dotenv==1.0.0
+requests==2.31.0
+Flask-SQLAlchemy==3.1.1
+psycopg2-binary==2.9.9
+
+# Solana SDK (replacing web3.py)
+solana==0.34.3
+solders==0.21.0
+anchorpy==0.20.1
+
+# Utilities
+base58==2.1.1
+cryptography>=41.0.0
+
+# EVM
+web3==6.15.1
+
+# Polymarket CLOB SDK is NOT installed here: py-clob-client requires eth-account>=0.13
+# (hexbytes>=1.2) which is fundamentally incompatible with web3 6.x (hexbytes<0.4).
+# It lives in its own venv (/opt/clob, see Dockerfile) and is driven via clob_bridge.py.
+
+# Error tracking (GAPS Epic 3). Flask extra pulls the Flask integration.
+# No DSN configured -> observability.py no-ops, so this is inert until SENTRY_DSN is set.
+sentry-sdk[flask]==2.19.2

@@ -1,0 +1,2 @@
+has_db=True
+pool=BY4cLgYMpE1AA5X5jiXHEMTrVkG7uhDvr6KxjU8YfCEZ

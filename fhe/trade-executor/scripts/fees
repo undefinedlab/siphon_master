@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+"""Every fee Siphon has taken, in one command.
+
+    ./scripts/fees                 # totals + per-chain + per-vault
+    ./scripts/fees --json          # the raw payload, for piping into jq
+    ./scripts/fees --days 7        # window the executor ledger; vault balances are running
+                                   #   totals with no per-period view, so they stay in full
+    ./scripts/fees --strategy <id> # one order's fees
+    ./scripts/fees --no-claims     # skip the on-chain claim log scan (faster, owed-only)
+
+Reads /admin/fees on the executor, which merges the two places fee money actually lives:
+
+  off-chain   arming + window (one USDC transfer) and fills, held in the executor wallet and
+              recorded as fee_accruals rows
+  on-chain    the withdrawal gas reimbursement each vault carved out and is holding as a
+              pull-payment balance, plus whatever the collector has already claimed
+
+Config (env or ~/.siphon-fees.env as KEY=VALUE lines):
+  SIPHON_EXECUTOR_URL   default http://localhost:5005
+  ADMIN_API_TOKEN       the executor's admin token (sent as X-ADMIN-TOKEN)
+"""
+import argparse
+import json
+import os
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+DEFAULT_URL = "http://localhost:5005"
+CONFIG_FILE = os.path.expanduser("~/.siphon-fees.env")
+
+
+def load_config() -> dict:
+    """Env wins; the dotfile is there so the command needs no arguments day to day."""
+    cfg = {}
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE) as fh:
+            for line in fh:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    cfg[k.strip()] = v.strip().strip('"').strip("'")
+    for key in ("SIPHON_EXECUTOR_URL", "ADMIN_API_TOKEN"):
+        if os.environ.get(key):
+            cfg[key] = os.environ[key]
+    return cfg
+
+
+def fetch(cfg: dict, params: dict) -> dict:
+    base = (cfg.get("SIPHON_EXECUTOR_URL") or DEFAULT_URL).rstrip("/")
+    token = cfg.get("ADMIN_API_TOKEN", "")
+    if not token:
+        sys.exit(f"ADMIN_API_TOKEN is not set. Put it in {CONFIG_FILE} or the environment.")
+    url = f"{base}/admin/fees"
+    query = urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})
+    if query:
+        url = f"{url}?{query}"
+    req = urllib.request.Request(url, headers={"X-ADMIN-TOKEN": token})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        sys.exit(f"{url} -> HTTP {e.code}: {e.read().decode()[:300]}")
+    except Exception as e:
+        sys.exit(f"{url} -> {e}")
+
+
+def usd(value) -> str:
+    return "     —" if value is None else f"${value:,.2f}"
+
+
+def render(data: dict) -> None:
+    totals = data.get("usd", {})
+    line = "─" * 66
+
+    print(f"\n  SIPHON FEES{'  ·  fees are OFF' if not data.get('fee_enabled') else ''}")
+    print(f"  {line}")
+    print(f"  {'Total taken':<34}{usd(totals.get('total')):>14}")
+    print(f"  {'  arming + window + fills':<34}{usd(totals.get('accrued')):>14}")
+    print(f"  {'  withdrawal gas (on-chain)':<34}{usd(totals.get('onchain_withdraw')):>14}")
+    print(f"  {line}")
+    print(f"  {'Still in the executor wallet':<34}{usd(totals.get('unswept')):>14}")
+    print(f"  {'Already swept to the fee vault':<34}{usd(totals.get('swept')):>14}")
+
+    by_chain = data.get("by_chain") or []
+    if by_chain:
+        print(f"\n  EXECUTOR FEES BY CHAIN")
+        print(f"  {'chain':<14}{'fees':>7}{'accrued':>14}{'swept':>14}{'unswept':>14}")
+        for c in by_chain:
+            print(f"  {c['chain']:<14}{c['count']:>7}{usd(c['accrued_usd']):>14}"
+                  f"{usd(c['swept_usd']):>14}{usd(c['unswept_usd']):>14}")
+
+    groups = data.get("by_group") or []
+    if groups:
+        print(f"\n  EXECUTOR FEES BY KIND")
+        print(f"  {'chain':<14}{'asset':<7}{'kind':<11}{'count':>7}{'amount':>18}{'usd':>12}")
+        for g in groups:
+            print(f"  {g['chain']:<14}{g['asset']:<7}{g['kind']:<11}{g['count']:>7}"
+                  f"{g['amount']:>18,.8f}{usd(g.get('usd')):>12}")
+
+    vaults = data.get("onchain_withdraw") or []
+    if vaults:
+        print(f"\n  WITHDRAWAL FEES HELD ON-CHAIN")
+        print(f"  {'chain':<18}{'asset':<7}{'cfg':<12}{'owed now':>18}{'lifetime':>18}")
+        for v in vaults:
+            if v.get("error"):
+                print(f"  {v.get('chain', v.get('chain_id','?')):<18}{v.get('asset','—'):<7}"
+                      f"could not read: {v['error'][:60]}")
+                continue
+            cfg = "off" if not v["fee_enabled"] else f"{v['fee_bps']}bps+gas"
+            lifetime = "unknown" if v["lifetime"] is None else f"{v['lifetime']:,.8f}"
+            print(f"  {v['chain']:<18}{v['asset']:<7}{cfg:<12}"
+                  f"{v['unclaimed']:>18,.8f}{lifetime:>18}")
+        if any(v.get("claimed_error") for v in vaults if not v.get("error")):
+            print("    lifetime is unknown where the claim log scan did not run; 'owed now' is"
+                  " always exact.")
+    print()
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="Report every fee Siphon has collected.")
+    ap.add_argument("--json", action="store_true", help="print the raw payload")
+    ap.add_argument("--days", type=int,
+                    help="window the executor ledger to the last N days (vaults report in full)")
+    ap.add_argument("--strategy", help="only this strategy id")
+    ap.add_argument("--no-onchain", action="store_true", help="skip the vaults entirely")
+    ap.add_argument("--no-claims", action="store_true", help="skip the on-chain claim log scan")
+    args = ap.parse_args()
+
+    data = fetch(load_config(), {
+        "days": args.days,
+        "strategy_id": args.strategy,
+        "onchain": "0" if args.no_onchain else None,
+        "claims": "0" if args.no_claims else None,
+    })
+    print(json.dumps(data, indent=2)) if args.json else render(data)
+
+
+if __name__ == "__main__":
+    main()

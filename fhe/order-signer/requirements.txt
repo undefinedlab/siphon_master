@@ -1,0 +1,9 @@
+# web3 7.x + py-clob-client share eth-account>=0.13 / hexbytes>=1.2 — no conflict here
+# (unlike the trade-executor's web3 6.x env; that's why signing lives in this sidecar).
+flask==3.0.3
+gunicorn==22.0.0
+web3==7.6.0
+py-clob-client==0.34.6
+# dstack KMS: derives the Polygon signing key INSIDE the enclave (to_account) so no raw
+# private key is ever stored in env or handled in plaintext. [ethereum] pulls eth-account.
+dstack-sdk[ethereum]==0.5.4

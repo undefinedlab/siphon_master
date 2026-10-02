@@ -1,0 +1,7 @@
+# Isolated Hyperliquid SDK env (do NOT mix into the main executor venv).
+#   python -m venv /opt/hl   # or .venv-hl on Windows
+#   /opt/hl/bin/pip install -r requirements-hl.txt
+#   export HYPERLIQUID_PYTHON=/opt/hl/bin/python
+hyperliquid-python-sdk==0.24.0
+eth-account>=0.10.0
+requests>=2.31.0
