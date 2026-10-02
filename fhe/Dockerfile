@@ -1,0 +1,46 @@
+# Build context: siphon-fhe/
+# Bakes the bind-mounts from docker-compose.prod.yml so Railway has no host mounts.
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HOME=/tmp
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY api-gateway/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY api-gateway/alembic.ini .
+COPY api-gateway/gunicorn.conf.py .
+COPY api-gateway/reconcile_main.py .
+COPY api-gateway/worker_main.py .
+COPY api-gateway/migrations/ migrations/
+COPY api-gateway/app/ app/
+
+COPY trade-executor/address_validator.py /app/address_validator.py
+COPY trade-executor/asp_membership.py /app/asp_membership.py
+COPY trade-executor/session_key.py /app/session_key.py
+COPY trade-executor/evm_chain_config.py /app/evm_chain_config.py
+
+RUN mkdir -p /etc/siphon
+COPY config/generation-manifest.json /etc/siphon/generation-manifest.json
+
+RUN groupadd -g 10001 siphon && \
+    useradd -u 10001 -g siphon -s /bin/bash siphon && \
+    chown -R siphon:siphon /app && \
+    chown -R siphon:siphon /etc/siphon
+
+USER siphon
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/v1/liveness || exit 1
+
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "app.main:app"]

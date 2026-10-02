@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  api-gateway-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-gateway
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: api-gateway/requirements.txt
+
+      - name: Install dependencies
+        # flask is a test-only dep here: pytest.ini puts ../trade-executor on the path so
+        # tests/security/test_wallet_intent.py can assert both services build the SAME canonical
+        # intent message, and the executor's wallet_auth imports flask.
+        run: pip install -r requirements.txt flask
+
+      - name: Overlord regression tests
+        run: pytest tests/security/test_overlord_security.py -q
+
+      - name: Security test suite
+        run: pytest tests/security/ -q
+
+  trade-executor-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: trade-executor
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install pytest flask flask-cors eth-account werkzeug
+
+      - name: Overlord regression tests
+        run: pytest tests/test_overlord_security.py -q
+
+      # Guards the byte-parity between session_key.py and siphon-app's sessionKey.ts. Drift there
+      # rejects every session silently, so it has to fail in CI rather than in a browser.
+      - name: Session-key delegation tests
+        run: pytest tests/test_session_key.py -q
+
+  proving-relayer-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: proving-relayer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest eth-account
+
+      - name: Overlord regression tests
+        run: pytest test_overlord_security.py -q
+
+      - name: Resource control tests
+        run: pytest test_limits.py -q
+
+  repo-overlord-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Decryptor source guards present
+        run: |
+          grep -q 'require_auth_token_in_production' decryptor/src/main.rs
+          grep -q 'build_cors_layer' decryptor/src/main.rs
+          ! grep -q 'CorsLayer::permissive()' decryptor/src/main.rs
