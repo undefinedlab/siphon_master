@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "manifestId": "siphon-staging-2026-08-15",
+  "environment": "staging",
+  "generatedAt": "2026-08-15T21:10:00+05:30",
+  "notes": "Canonical vault-generation manifest. sepolia-hard-asp-v2-20260815 runs the REVIEWED production MPC ceremony verifiers (artifact manifest 4084073e...). v1 (dev-era keys) demoted to EXIT_ONLY. base-hard-asp intentionally absent until the reviewed Base deployment exists.",
+  "generations": [
+    {
+      "generationId": "base-legacy-2026-07",
+      "chainId": 8453,
+      "lifecycle": "EXIT_ONLY",
+      "entrypoint": "0x5433995fc5a0459E5ad7f2A81561384887F37174",
+      "deploymentBlock": 48703312,
+      "assets": {
+        "ETH": {
+          "vault": "0x83A22415864782830dfa3078F0c574E226E741cC",
+          "tree": "0x5A41739d8b0Abe8526215E7CDFf91d1dac6Cd71b"
+        },
+        "USDC": {
+          "vault": "0x3F92B94131Df4F8B26a1fB61A3C49FC82679aF33",
+          "tree": "0x71fF03a0214ac20B8AA55AdA8665F31F7142D437"
+        }
+      },
+      "capabilities": [
+        "READ",
+        "WITHDRAW"
+      ]
+    },
+    {
+      "generationId": "sepolia-soft-era",
+      "chainId": 11155111,
+      "lifecycle": "EXIT_ONLY",
+      "entrypoint": "0xE5126A49D1bb93957b4B2F63BCB05a1F8EA9e705",
+      "deploymentBlock": 11278082,
+      "assets": {
+        "ETH": {
+          "vault": "0x8BC94f9b057CB56D5F32d1B8D509Ce239A9Cc249",
+          "tree": "0xC7Ad7eA094942239218ABE33D1EbD77349Bd8f99"
+        },
+        "USDC": {
+          "vault": "0x8Ce8bb803e53E807447e0da405025A0975d9A773",
+          "tree": "0x20EfA6c1138570600BE6ad4F60965696D5BC88DD"
+        }
+      },
+      "capabilities": [
+        "READ",
+        "WITHDRAW"
+      ]
+    },
+    {
+      "generationId": "sepolia-hard-asp-v1-20260806",
+      "chainId": 11155111,
+      "lifecycle": "EXIT_ONLY",
+      "entrypoint": "0xB45Ac5aBBa8d282f2F8A2D55CBd13711230Ae0e0",
+      "aspPostman": "0xe3C781b49Cff389481dc27bbbB5C56099822E2B1",
+      "deploymentBlock": 11426483,
+      "assets": {
+        "ETH": {
+          "vault": "0x6e0c4A1f7adAf0f80a4881a2635C0AFfE998fBDe",
+          "tree": "0x2a9C7e0603611062C872FA58083Da4394aa8623a"
+        },
+        "USDC": {
+          "vault": "0x50A3bc1Cd443fe5bd0A9FbF04FF655E4b54Deb3b",
+          "tree": "0xE895a7ECbF7Ea9fb856CE685145B1C8fc97bBd28"
+        }
+      },
+      "capabilities": [
+        "READ",
+        "WITHDRAW"
+      ]
+    },
+    {
+      "generationId": "sepolia-hard-asp-v2-20260815",
+      "chainId": 11155111,
+      "lifecycle": "ACTIVE",
+      "entrypoint": "0x568C03C9d44C7EBbbF63b1e8415CB55FDd3E55f4",
+      "aspPostman": "0xe3C781b49Cff389481dc27bbbB5C56099822E2B1",
+      "deploymentBlock": 11495159,
+      "zkCeremony": "mpc",
+      "artifactManifestSha256": "4084073e94ec74977af8f627edab04c06c273052367fd2e924ea7dce2bde9e4d",
+      "assets": {
+        "ETH": {
+          "vault": "0x5E62C965E52D6A408C2E33e8FE0611cA47E811Ba",
+          "tree": "0xa620f2000bd16FC99210ca4dc38eAc5eebC1533F"
+        },
+        "USDC": {
+          "vault": "0xFEd3A2C6cF39d19B1038835D0AAD1FE8126F751A",
+          "tree": "0x94812fF189cA7A7877070Cc2742b4A2249b40409"
+        }
+      },
+      "capabilities": [
+        "READ",
+        "DEPOSIT",
+        "WITHDRAW",
+        "STRATEGY"
+      ]
+    }
+  ]
+}

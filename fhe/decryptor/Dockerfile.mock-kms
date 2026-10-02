@@ -1,0 +1,23 @@
+# Mock-KMS decryptor for a host WITHOUT TDX (the Arbitrum AWS box). NOT a TEE: every key derives
+# from MOCK_KMS_SEED — see attester::kms_key.
+#
+# Swaps only the Rust binary into the reviewed Base v5 image, so the v5 ceremony keys (20/20
+# checked against the Base verifiers), rapidsnark and the prover scripts stay byte-identical.
+#
+# Build context must contain siphon-fhe/decryptor and the 25-limb siphon-zk-v2 tree
+# (ceremony/v5-compliance-split) — the 26-limb checkout compiles and then fails on-chain.
+#   docker build -f siphon-fhe/decryptor/Dockerfile.mock-kms -t siphon-decryptor:mock-kms .
+ARG BASE_IMAGE=docker.io/0xswarn/siphon-decryptor@sha256:f3d8f924219b49bc7796b558c6b45c7355164f7e976423bdc8d7d3b524ceed09
+
+FROM rust:1.91-bookworm AS builder
+WORKDIR /build
+COPY siphon-zk-v2/spend-core ./siphon-zk-v2/spend-core
+COPY siphon-zk-v2/test-vectors ./siphon-zk-v2/test-vectors
+COPY siphon-fhe/decryptor/Cargo.toml siphon-fhe/decryptor/Cargo.lock* ./siphon-fhe/decryptor/
+COPY siphon-fhe/decryptor/src ./siphon-fhe/decryptor/src
+WORKDIR /build/siphon-fhe/decryptor
+RUN cargo test --release --features mock-kms && cargo build --release --features mock-kms
+
+FROM ${BASE_IMAGE}
+COPY --from=builder /build/siphon-fhe/decryptor/target/release/siphon-decryptor /usr/local/bin/siphon-decryptor
+LABEL money.siphon.tee="mock-kms" money.siphon.chains="42161"

@@ -1,0 +1,1359 @@
+﻿openapi: 3.1.0
+info:
+  title: Siphon Public API
+  version: 1.0.0
+  summary: Public HTTP surface for Siphon Protocol (trade-executor).
+  description: |
+    Stable contract for clients, the TypeScript SDK, and MCP tools.
+
+    Served by the trade-executor service. Internal services (FHE engine, decryptor,
+    order-signer, admin, nullifier registry) are intentionally excluded.
+  contact:
+    name: Siphon
+    url: https://siphon.money
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:5005
+    description: Local trade-executor
+  - url: https://api.siphon.money
+    description: Production (when deployed)
+
+tags:
+  - name: Health
+  - name: Vault Index
+  - name: Strategies
+  - name: Keys
+  - name: Notes
+  - name: Commitments
+  - name: Precommitments
+  - name: Receipts
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      operationId: getHealth
+      summary: Service health check
+      security: []
+      responses:
+        "200":
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /auth/challenge:
+    post:
+      tags: [Health]
+      operationId: createAuthChallenge
+      summary: Issue a single-use write nonce
+      security: []
+      responses:
+        "200":
+          description: Challenge issued
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [nonce, expires_at]
+                properties:
+                  nonce:
+                    type: string
+                  expires_at:
+                    type: integer
+                  ttl_seconds:
+                    type: integer
+
+  /auth/tag-bind:
+    post:
+      tags: [Commitments]
+      operationId: bindTagAuth
+      summary: Pin tag auth token hash (write challenge required)
+      security:
+        - WalletWriteChallenge: []
+      responses:
+        "200":
+          description: Tag verifier pinned
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /vault-index/health:
+    get:
+      tags: [Vault Index]
+      operationId: getVaultIndexHealth
+      summary: Indexer-backed vault index health
+      security: []
+      responses:
+        "200":
+          description: Indexer reachable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultIndexHealth"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /vault-index/leaves:
+    get:
+      tags: [Vault Index]
+      operationId: listVaultLeaves
+      summary: List merkle leaves for a chain and asset
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/chainId"
+        - name: asset
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [ETH, USDC, NATIVE]
+          description: Asset symbol (`NATIVE` aliases to `ETH`)
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 500
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: afterIndex
+          in: query
+          schema:
+            type: integer
+          description: Cursor ΓÇö return leaves with leaf_index greater than this value
+      responses:
+        "200":
+          description: Ordered leaf list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultLeavesResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /vault-index/deposits:
+    get:
+      tags: [Vault Index]
+      operationId: findVaultDeposit
+      summary: Look up a vault deposit by precommitment
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/chainId"
+        - name: precommitment
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deposit found or not
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultDepositResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /vault-index/balance:
+    get:
+      tags: [Vault Index]
+      operationId: getVaultProtocolBalance
+      summary: Protocol-wide cumulative deposits (TVL-style, not per-user)
+      description: |
+        Cumulative deposit totals per asset. Never decremented on withdrawal.
+        Per-user balances come from the client's encrypted notes.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/chainId"
+      responses:
+        "200":
+          description: Protocol balances
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultBalanceResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /createStrategy:
+    post:
+      tags: [Strategies]
+      operationId: createStrategy
+      summary: Register an encrypted strategy for monitoring
+      security:
+        - WalletWriteChallenge: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStrategyRequest"
+      responses:
+        "201":
+          description: Strategy created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateStrategyResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /strategies/{user_id}:
+    get:
+      tags: [Strategies]
+      operationId: listStrategies
+      summary: List strategies for a wallet user
+      security:
+        - WalletSig: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Wallet address (must match authenticated wallet)
+      responses:
+        "200":
+          description: Strategy list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StrategiesListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /strategies/{strategy_id}/abort:
+    post:
+      tags: [Strategies]
+      operationId: abortStrategy
+      summary: Abort unfired strategy work
+      security:
+        - WalletWriteChallenge: []
+      parameters:
+        - name: strategy_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Abort result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AbortStrategyResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /strategy/{strategy_id}/result:
+    get:
+      tags: [Strategies]
+      operationId: getStrategyResult
+      summary: Fetch encrypted evaluation result for a strategy
+      security:
+        - WalletSig: []
+      parameters:
+        - name: strategy_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Encrypted result payload
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /uploadServerKey:
+    post:
+      tags: [Keys]
+      operationId: uploadServerKey
+      summary: Upload FHE evaluation (server) key for a user
+      security:
+        - WalletWriteChallenge: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, server_key]
+              properties:
+                user_id:
+                  type: string
+                server_key:
+                  type: string
+                  description: Serialized FHE server key (client-generated)
+      responses:
+        "200":
+          description: Key stored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /hasServerKey/{user_id}:
+    get:
+      tags: [Keys]
+      operationId: hasServerKey
+      summary: Check whether an FHE server key exists for a user
+      security: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Presence flag
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  has_key:
+                    type: boolean
+
+  /notes:
+    post:
+      tags: [Notes]
+      operationId: createNote
+      summary: Store an encrypted note for the authenticated wallet
+      security:
+        - WalletWriteChallenge: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNoteRequest"
+      responses:
+        "201":
+          description: Note created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    get:
+      tags: [Notes]
+      operationId: listNotes
+      summary: List notes for the authenticated wallet
+      security:
+        - WalletSig: []
+      responses:
+        "200":
+          description: Notes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Note"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /notes/export:
+    get:
+      tags: [Notes]
+      operationId: exportNotes
+      summary: Export all notes for the authenticated wallet
+      security:
+        - WalletSig: []
+      responses:
+        "200":
+          description: Notes export
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Note"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /notes/{note_id}/spent:
+    patch:
+      tags: [Notes]
+      operationId: markNoteSpent
+      summary: Update note spent status
+      security:
+        - WalletSig: []
+        - ApiToken: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [true, pending, false]
+                  default: "true"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkStatus"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /commitments:
+    post:
+      tags: [Commitments]
+      operationId: createCommitment
+      summary: Store an encrypted commitment blob (tag-auth)
+      security:
+        - TagHmac: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommitmentRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    get:
+      tags: [Commitments]
+      operationId: listCommitments
+      summary: List commitments for the authenticated tag
+      security:
+        - TagHmac: []
+      responses:
+        "200":
+          description: Commitments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  commitments:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Commitment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /commitments/export:
+    get:
+      tags: [Commitments]
+      operationId: exportCommitments
+      summary: Export commitments for the authenticated tag
+      security:
+        - TagHmac: []
+      responses:
+        "200":
+          description: Export
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  commitments:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Commitment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /commitments/prune:
+    post:
+      tags: [Commitments]
+      operationId: pruneCommitments
+      summary: Delete long-spent commitments
+      security:
+        - TagHmac: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                older_than_days:
+                  type: integer
+                  minimum: 0
+                  default: 7
+      responses:
+        "200":
+          description: Prune result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /commitments/{row_id}/spent:
+    patch:
+      tags: [Commitments]
+      operationId: markCommitmentSpent
+      summary: Update commitment spent status
+      security:
+        - TagHmac: []
+      parameters:
+        - name: row_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [true, pending, false]
+                  default: "true"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkStatus"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /precommitments:
+    post:
+      tags: [Precommitments]
+      operationId: createPrecommitment
+      summary: Store an encrypted precommitment
+      security:
+        - TagHmac: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enc_blob, iv]
+              properties:
+                enc_blob:
+                  type: string
+                iv:
+                  type: string
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    get:
+      tags: [Precommitments]
+      operationId: listPrecommitments
+      summary: List precommitments for the authenticated tag
+      security:
+        - TagHmac: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, in_use, resolved]
+      responses:
+        "200":
+          description: Precommitments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  precommitments:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Precommitment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /precommitments/pool-count:
+    get:
+      tags: [Precommitments]
+      operationId: getPrecommitmentPoolCount
+      summary: Count pending + in-use precommitments
+      security:
+        - TagHmac: []
+      responses:
+        "200":
+          description: Pool size
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /precommitments/{row_id}/claim:
+    patch:
+      tags: [Precommitments]
+      operationId: claimPrecommitment
+      summary: Atomically claim a pending precommitment
+      security:
+        - TagHmac: []
+      parameters:
+        - name: row_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Claimed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /precommitments/{row_id}/resolve:
+    patch:
+      tags: [Precommitments]
+      operationId: resolvePrecommitment
+      summary: Mark an in-use precommitment as resolved
+      security:
+        - TagHmac: []
+      parameters:
+        - name: row_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Resolved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /precommitments/{row_id}/release:
+    patch:
+      tags: [Precommitments]
+      operationId: releasePrecommitment
+      summary: Return an in-use precommitment to pending
+      security:
+        - TagHmac: []
+      parameters:
+        - name: row_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Released
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /receipt:
+    post:
+      tags: [Receipts]
+      operationId: createReceipt
+      summary: Mint a compliant receipt for a settled tx
+      security:
+        - WalletWriteChallenge: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReceiptRequest"
+      responses:
+        "201":
+          description: Receipt minted (owner view)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  receipt:
+                    $ref: "#/components/schemas/Receipt"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "502":
+          description: Receipt signing failed
+
+  /receipts:
+    get:
+      tags: [Receipts]
+      operationId: listReceipts
+      summary: List receipts for the authenticated wallet
+      security:
+        - WalletSig: []
+      responses:
+        "200":
+          description: Owner receipts (identity included)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  receipts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Receipt"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /receipt/{receipt_id}:
+    get:
+      tags: [Receipts]
+      operationId: getReceiptPublic
+      summary: Public receipt view (no identity layer)
+      security: []
+      parameters:
+        - name: receipt_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public receipt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  receipt:
+                    $ref: "#/components/schemas/Receipt"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /receipt/verify:
+    post:
+      tags: [Receipts]
+      operationId: verifyReceipt
+      summary: Recompute digest and verify TEE signature
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyReceiptRequest"
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifyReceiptResponse"
+
+components:
+  securitySchemes:
+    WalletSig:
+      type: apiKey
+      in: header
+      name: X-Wallet-Address
+      description: |
+        Long-lived read auth uses three headers:
+        - `X-Wallet-Address`
+        - `X-Signature` ΓÇö ECDSA over `Siphon auth v1:<timestamp>`
+        - `X-Timestamp`
+    WalletWriteChallenge:
+      type: apiKey
+      in: header
+      name: X-Write-Nonce
+      description: |
+        Short-lived write auth:
+        1. POST /auth/challenge ΓåÆ nonce
+        2. Sign `Siphon auth v1:write:<nonce>`
+        3. Send `X-Wallet-Address`, `X-Write-Signature`, `X-Write-Nonce`
+    TagHmac:
+      type: apiKey
+      in: header
+      name: X-Tag
+      description: |
+        Tag auth uses two headers:
+        - `X-Tag` ΓÇö client tag (hex)
+        - `X-Auth-Token` ΓÇö v1 HMAC(tag) or pinned v2 wallet-bound token
+    ApiToken:
+      type: apiKey
+      in: header
+      name: X-API-TOKEN
+      description: "Executor-only shared secret. Never ship to the browser. Also accepts `Authorization: Bearer <token>`."
+
+  parameters:
+    chainId:
+      name: chainId
+      in: query
+      required: true
+      schema:
+        type: integer
+        example: 11155111
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Missing or invalid auth
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Authenticated but not allowed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: State conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              limit:
+                type: integer
+              window_seconds:
+                type: integer
+    ServiceUnavailable:
+      description: Dependency unavailable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    OkStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: healthy
+        service:
+          type: string
+          example: trade-executor
+
+    VaultIndexHealth:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        leafCount:
+          type: integer
+        error:
+          type: string
+
+    VaultLeavesResponse:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        asset:
+          type: string
+        leaves:
+          type: array
+          items:
+            type: string
+        count:
+          type: integer
+
+    VaultDepositResponse:
+      oneOf:
+        - type: object
+          properties:
+            found:
+              type: boolean
+              const: false
+        - type: object
+          properties:
+            found:
+              type: boolean
+              const: true
+            amount:
+              type: string
+            commitment:
+              type: string
+            precommitment:
+              type: string
+            blockNumber:
+              type: integer
+            txHash:
+              type: string
+
+    VaultBalanceResponse:
+      type: object
+      properties:
+        chainId:
+          type: integer
+        balances:
+          type: object
+          additionalProperties:
+            type: string
+          description: Asset ΓåÆ cumulative amount (wei / smallest unit) as string
+
+    CreateStrategyRequest:
+      type: object
+      required: [user_id, strategy_type, asset_in, asset_out, amount, recipient_address]
+      properties:
+        user_id:
+          type: string
+          description: Owner wallet address
+        strategy_type:
+          type: string
+          description: e.g. LIMIT, STOP, TWAP, DCA, RANGE_GRID, POLYMARKET
+        asset_in:
+          type: string
+        asset_out:
+          type: string
+        amount:
+          type: number
+        recipient_address:
+          type: string
+        from_chain:
+          type: string
+          example: "8453"
+        to_chain:
+          type: string
+          example: "8453"
+        encrypted_upper_bound:
+          type: string
+        encrypted_lower_bound:
+          type: string
+        condition_tree:
+          type: object
+          additionalProperties: true
+        zkp_data:
+          type: object
+          additionalProperties: true
+        zk_proof:
+          type: object
+          additionalProperties: true
+        output_mode:
+          type: string
+          default: address
+        output_precommitment:
+          type: string
+        legs:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        interval_sec:
+          type: integer
+        grid_levels:
+          type: integer
+        max_slippage_bps:
+          type: integer
+        start_delay_sec:
+          type: integer
+        schedule_anchor:
+          type: integer
+        execution_window_sec:
+          type: integer
+        price_feed_id:
+          type: string
+        poly_meta:
+          type: object
+          additionalProperties: true
+        arming_precommitment:
+          type: string
+        arming_fee_wei:
+          type: string
+
+    CreateStrategyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        strategy_id:
+          type: string
+          format: uuid
+        leg_count:
+          type: integer
+          nullable: true
+
+    StrategySummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        strategy_type:
+          type: string
+        asset_in:
+          type: string
+        asset_out:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+        tx_hash:
+          type: string
+          nullable: true
+        executed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        has_encrypted_result:
+          type: boolean
+        result_updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        change_commitment:
+          type: string
+          nullable: true
+
+    StrategiesListResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        strategies:
+          type: array
+          items:
+            $ref: "#/components/schemas/StrategySummary"
+
+    AbortStrategyResponse:
+      type: object
+      additionalProperties: true
+      description: Abort outcome including recovered amounts and phantom commitments to invalidate
+
+    CreateNoteRequest:
+      type: object
+      required: [ciphertext, iv, commitment, nullifier_hash]
+      properties:
+        ciphertext:
+          type: string
+        iv:
+          type: string
+        commitment:
+          type: string
+        nullifier_hash:
+          type: string
+        chain_id:
+          type: integer
+          default: 11155111
+        asset:
+          type: string
+          default: ETH
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: string
+        wallet:
+          type: string
+        ciphertext:
+          type: string
+        iv:
+          type: string
+        commitment:
+          type: string
+        nullifier_hash:
+          type: string
+        chain_id:
+          type: integer
+        asset:
+          type: string
+        spent:
+          type: string
+          enum: [true, pending, false]
+        created_at:
+          type: string
+          format: date-time
+
+    CreateCommitmentRequest:
+      type: object
+      required: [enc_blob, iv, asset]
+      properties:
+        enc_blob:
+          type: string
+        iv:
+          type: string
+        asset:
+          type: string
+        source:
+          type: string
+          default: deposit
+
+    Commitment:
+      type: object
+      properties:
+        id:
+          type: string
+        tag:
+          type: string
+        asset:
+          type: string
+        enc_blob:
+          type: string
+        iv:
+          type: string
+        spent:
+          type: string
+          enum: [true, pending, false]
+        source:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Precommitment:
+      type: object
+      properties:
+        id:
+          type: string
+        tag:
+          type: string
+        enc_blob:
+          type: string
+        iv:
+          type: string
+        status:
+          type: string
+          enum: [pending, in_use, resolved]
+        claimed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    CreateReceiptRequest:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum: [deposit, withdraw]
+        tx_hash:
+          type: string
+        chain_id:
+          type: integer
+        token:
+          type: string
+        amount:
+          type: string
+        counterparty:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        shielded_ref:
+          type: string
+          description: Hashed server-side; never stored in clear
+        strategy_id:
+          type: string
+        identity:
+          type: object
+          additionalProperties:
+            type: string
+          description: Optional merchant/payee fields (owner-only)
+
+    Receipt:
+      type: object
+      additionalProperties: true
+      description: Receipt object; identity fields only present for owner views
+
+    VerifyReceiptRequest:
+      type: object
+      properties:
+        kind:
+          type: string
+        tx_hash:
+          type: string
+        chain_id:
+          type: integer
+        token:
+          type: string
+        amount:
+          type: string
+        counterparty:
+          type: string
+        occurred_at:
+          type: string
+        shielded_ref_hash:
+          type: string
+        digest:
+          type: string
+        tee_signature:
+          type: string
+        tee_address:
+          type: string
+        identity_hash:
+          type: string
+        identity:
+          type: object
+          additionalProperties: true
+        attestation_ref:
+          type: string
+
+    VerifyReceiptResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        digest_matches:
+          type: boolean
+        signature_valid:
+          type: boolean
+        recovered_signer:
+          type: string
+          nullable: true
+        recomputed_digest:
+          type: string
+        attestation_ref:
+          type: string
+        note:
+          type: string

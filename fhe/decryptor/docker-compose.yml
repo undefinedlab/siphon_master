@@ -1,0 +1,97 @@
+# dstack app for Phala Cloud (Intel TDX) — siphon-decryptor.
+# Deploy: phala cvms create --name siphon-decryptor --compose ./docker-compose.yml
+# Replace <your-namespace> with the registry you pushed to (pin @sha256:... for a
+# reproducible enclave measurement).
+services:
+  siphon-decryptor:
+    image: docker.io/0xswarn/siphon-decryptor:latest
+    restart: unless-stopped
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      # Sealed-only: /clientKey accepts exclusively crypto_box_seal blobs bound to the attested
+      # enclave pubkey (SIPHON_DEV_PLAINTEXT_KEY is compiled out of release builds entirely).
+      - DECRYPTOR_KEY_DIR=/data/keys
+      # Shared secret required on /clientKey + /decrypt (sent by the trade-executor as
+      # X-Decryptor-Token). Must equal the executor's DECRYPTOR_AUTH_TOKEN. Empty => routes are
+      # open (legacy); set on BOTH sides to close them. Provide via Phala encrypted env.
+      - DECRYPTOR_AUTH_TOKEN=${DECRYPTOR_AUTH_TOKEN:-}
+      # --- v3 fire-time spend prover -------------------------------------------------------
+      # /spend/prove syncs the WHOLE admitted+revoked set from the ASP and derives its own paths.
+      # It must never call /set/path?label=… : a per-label query at fire time correlates in real
+      # time with the spend landing on-chain moments later, handing the ASP a deposit->spend link
+      # it does not otherwise have.
+      - ASP_BASE_URL=${ASP_BASE_URL:-}
+      # Same screen token the executor uses. Provide via Phala encrypted env, never in this file.
+      - ASP_SCREEN_TOKEN=${ASP_SCREEN_TOKEN:-}
+      # rapidsnark: ~10x snarkjs. On 2 vCPU that is <1s vs 6-12s per leg — the difference between
+      # a fill and a slipped price. Falls back to snarkjs only if the binary is missing.
+      - PROVE_BACKEND=${PROVE_BACKEND:-rapidsnark}
+      # --- snapshot freshness policy --------------------------------------------------------
+      # What makes an ASP snapshot acceptable. The enclave will not attest freshness against a
+      # snapshot it cannot bind to THIS deployment and to the postman, so all three of CHAIN_ID /
+      # HUB / POSTMAN_ADDRESS must be set or /spend/prove refuses outright.
+      #
+      # None of these are secrets — they are public chain data — but they are load-bearing: a wrong
+      # postman address makes every snapshot fail as "wrong signer", and a wrong hub or chain would
+      # accept a snapshot signed for a different deployment. Never take them from the ASP response.
+      - SNAPSHOT_CHAIN_ID=${SNAPSHOT_CHAIN_ID:-}
+      - COMPLIANCE_HUB=${COMPLIANCE_HUB:-}
+      # ComplianceHub.postman — `immutable` on-chain, so this is a constant per deployment.
+      - ASP_POSTMAN_ADDRESS=${ASP_POSTMAN_ADDRESS:-}
+      # Composes with ComplianceHub.attestationMaxAge: the SUM is the real revocation-evasion
+      # window, so keep this well under it.
+      - SNAPSHOT_MAX_AGE_SECS=${SNAPSHOT_MAX_AGE_SECS:-120}
+      # --- spend-freshness attestation ------------------------------------------------------
+      # The VaultKernel this enclave attests for. Bound into the signed digest because one hub is
+      # shared across kernels — without it an attestation for one kernel replays against another.
+      # Unset => /spend/prove refuses; it will not emit an unbindable signature.
+      - VAULT_KERNEL=${VAULT_KERNEL:-}
+      # ComplianceHub.attesterEpoch. setAttester bumps it, and every signature minted under the
+      # previous key stops verifying at that moment — including a rotation done BECAUSE the key
+      # leaked. Must be re-read from the hub after any rotation, never cached across one.
+      - ATTESTER_EPOCH=${ATTESTER_EPOCH:-0}
+      # Must be <= ComplianceHub.attestationMaxAge or the hub rejects with AttestationTooLong.
+      - ATTESTATION_TTL_SECS=${ATTESTATION_TTL_SECS:-120}
+    volumes:
+      # dstack guest-agent socket — lets the service fetch the TDX quote for GET /attestation
+      # (report_data = sha256(enclave x25519 pubkey)). Used once attestation is implemented.
+      - /var/run/dstack.sock:/var/run/dstack.sock
+      # Persistent (TDX-encrypted) volume for uploaded ClientKeys — survives redeploys so armed
+      # strategies aren't stranded when the CVM is updated.
+      - decryptor-data:/data
+
+  # Polymarket order-signer: custodies the Polygon executor key + CLOB creds inside the TDX
+  # enclave. The trade-executor sends authenticated intents (order/approvals/redeem); every
+  # signature happens here. Secrets via Phala encrypted env: ORDER_SIGNER_TOKEN,
+  # POLYGON_EXECUTOR_KEY, POLYGON_RPC, POLYMARKET_API_* (or POST /polymarket/deriveCreds once).
+  siphon-order-signer:
+    image: docker.io/0xswarn/siphon-order-signer:latest
+    restart: unless-stopped
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - ORDER_SIGNER_TOKEN=${ORDER_SIGNER_TOKEN}
+      # NO POLYGON_EXECUTOR_KEY: the signing key is derived INSIDE the enclave from the
+      # dstack KMS (get_key → to_account). No private key exists in env or at rest.
+      - POLYGON_RPC=${POLYGON_RPC:-https://polygon-rpc.com}
+      - POLYMARKET_FUNDER=${POLYMARKET_FUNDER:-}
+      - POLYMARKET_BUILDER_CODE=${POLYMARKET_BUILDER_CODE:-}
+      # Builder-program API creds → builder-signed order headers (sanctioned server-side flow;
+      # bypasses consumer IP geoblock for attributed builder traffic).
+      - POLYMARKET_BUILDER_API_KEY=${POLYMARKET_BUILDER_API_KEY:-}
+      - POLYMARKET_BUILDER_API_SECRET=${POLYMARKET_BUILDER_API_SECRET:-}
+      - POLYMARKET_BUILDER_API_PASSPHRASE=${POLYMARKET_BUILDER_API_PASSPHRASE:-}
+      # EVM executor keys imported as encrypted CVM secrets (same wallets → addresses unchanged).
+      # /evm/sign signs vault withdrawals + swaps so no EVM key stays plaintext on EC2.
+      - BASE_EXECUTOR_KEY=${BASE_EXECUTOR_KEY:-}
+      - ETH_SEPOLIA_EXECUTOR_KEY=${ETH_SEPOLIA_EXECUTOR_KEY:-}
+      - EVM_EXECUTOR_KEY=${EVM_EXECUTOR_KEY:-}
+    volumes:
+      # dstack guest-agent socket — required for KMS key derivation + TDX attestation quotes.
+      - /var/run/dstack.sock:/var/run/dstack.sock
+
+volumes:
+  decryptor-data:

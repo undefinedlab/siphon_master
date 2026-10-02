@@ -1,0 +1,48 @@
+[package]
+name = "siphon-decryptor"
+version = "0.1.0"
+edition = "2021"
+
+# Decrypt-only TEE service. Holds each user's tfhe ClientKey IN-ENCLAVE and turns the
+# fhe-engine's *encrypted* result bit into a plaintext true/false. It deliberately exposes
+# NO endpoint that returns decrypted strategy inputs — minimal TCB.
+#
+# NOTE: the `tfhe` version + feature flags MUST match ../fhe/Cargo.toml exactly, or the
+# RadixCiphertext / ClientKey produced/used by the engine+browser won't deserialize here.
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+axum = { version = "0.7", features = ["macros"] }
+# MUST match ../fhe/Cargo.toml — same ClientKey / RadixCiphertext wire format.
+tfhe = { version = "0.5", features = ["boolean", "shortint", "integer", "seeder_unix"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bincode = "1.3"
+hex = "0.4"
+tower-http = { version = "0.5", features = ["cors"] }
+# Attestation: dstack guest-agent client (TDX quote over /var/run/dstack.sock).
+dstack-sdk = "0.1.3"
+# Sealing: libsodium-compatible sealed boxes (crypto_box_seal) — browser seals the ClientKey
+# to the enclave x25519 pubkey after verifying the quote; we unseal here.
+crypto_box = { version = "0.9", features = ["seal"] }
+# Reseal-at-rest: persisted ClientKeys are AEAD-encrypted under a KMS-derived enclave key,
+# so the files are useless without the enclave even if the mounted volume is exposed.
+chacha20poly1305 = "0.10"
+sha2 = "0.10"
+rand_core = { version = "0.6", features = ["getrandom"] }
+# Fire-time spend proving: canonical Poseidon / ASP tree / SMT / witness layout. Path dep so
+# the enclave cannot drift from the circuits — the Docker build context must include it.
+spend-core = { path = "../../siphon-zk-v2/spend-core" }
+thiserror = "1"
+# ASP + chain-root fetch at fire time. rustls (not native-tls) so the image needs no OpenSSL.
+reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }
+# Attester: secp256k1 ECDSA over a keccak digest, recoverable so the hub can ecrecover to an
+# address. The key is KMS-derived (stable across reboots/replicas), NOT the per-boot x25519.
+k256 = { version = "0.13", features = ["ecdsa"] }
+sha3 = "0.10"
+# Decimal field-element strings -> big-endian 32-byte words for abi.encodePacked.
+num-bigint-dig = "0.8"
+
+[features]
+# Derive KMS keys from MOCK_KMS_SEED instead of the dstack guest agent, for a host without TDX.
+# NOT a TEE (see attester::kms_key). Never enable it for the Phala image.
+mock-kms = []

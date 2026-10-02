@@ -1,0 +1,12 @@
+# Deploy from this directory: railway up --service api-gateway
+# Keeps api-gateway from inheriting a sibling service's Dockerfile (e.g. decryptor).
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "sh -c \"echo '[api-gateway] alembic upgrade head...' && alembic upgrade head && echo '[api-gateway] migrations ok' && exec gunicorn -c gunicorn.conf.py app.main:app\""
+healthcheckPath = "/v1/liveness"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5

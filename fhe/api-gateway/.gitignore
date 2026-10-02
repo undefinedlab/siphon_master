@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+openapi.v1.json
+siphon_gateway_local.db
+siphon_gateway_local.db-*
+.recovered_api_key.txt
+_t.db
+siphon_sandbox.db
+.sandbox-env
