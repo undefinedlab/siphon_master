@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.local
+# `.env` does NOT match `.env.production` — it holds the postman key, so name it explicitly.
+.env.production
+*.db
+.pytest_cache/
+node_modules/
+package-lock.json
+# Solana ASP env (postman keypair, salt key) and the local devnet env.
+.env.solana
+.env.devnet
