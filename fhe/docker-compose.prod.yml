@@ -1,0 +1,962 @@
+# Production Docker Compose for AWS Deployment
+# Use: docker-compose -f docker-compose.prod.yml up -d
+
+services:
+  # Base JSON-RPC failover (rpc-failover/rpc_failover.py): the paid RPC first, public ones only
+  # when it refuses. Every Base consumer points here, so one empty RPC balance cannot take
+  # screening, admission, relaying and key purchase down together (2026-10-02).
+  base-rpc:
+    image: python:3.12-slim
+    container_name: siphon-base-rpc
+    command: ["python", "-u", "/app/rpc_failover.py"]
+    environment:
+      - RPC_UPSTREAMS=${BASE_MAINNET_RPC:?BASE_MAINNET_RPC must be set},https://mainnet.base.org,https://base-rpc.publicnode.com
+    volumes:
+      - ./rpc-failover/rpc_failover.py:/app/rpc_failover.py:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8545/',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Prebuilt Next standalone bundles. Build-time public variables remain isolated per app;
+  # these containers share only the Docker network, not browser origin or application storage.
+  siphon-app-current:
+    image: node@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32
+    container_name: siphon-app-current
+    command: ["node", "server.js"]
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
+    volumes:
+      - ${FRONTEND_RUNTIME_ROOT:-/home/ubuntu/siphon-release/frontend-runtime}/current:/app
+      - ${FRONTEND_RUNTIME_ROOT:-/home/ubuntu/siphon-release/frontend-runtime}/node-deps/node_modules:/app/node_modules:ro
+      - ${CURRENT_APP_PUBLIC_ROOT:-/home/ubuntu/siphon-release/siphon-app/public}:/app/public:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/dapp',{headers:{'user-agent':'Mozilla/5.0 Chrome/140 Safari/537.36'}}).then(r=>process.exit(r.status<400?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 15s
+    restart: unless-stopped
+
+  siphon-app-legacy:
+    image: node@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32
+    container_name: siphon-app-legacy
+    command: ["node", "server.js"]
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
+    volumes:
+      - ${FRONTEND_RUNTIME_ROOT:-/home/ubuntu/siphon-release/frontend-runtime}/legacy:/app
+      - ${FRONTEND_RUNTIME_ROOT:-/home/ubuntu/siphon-release/frontend-runtime}/node-deps/node_modules:/app/node_modules:ro
+      - ${LEGACY_APP_PUBLIC_ROOT:-/home/ubuntu/siphon-release/siphon-app-legacy/public}:/app/public:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/dapp',{headers:{'user-agent':'Mozilla/5.0 Chrome/140 Safari/537.36'}}).then(r=>process.exit(r.status<400?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 15s
+    restart: unless-stopped
+
+  # Public TLS edge. Start this only after the internal health and proof smoke tests pass.
+  # Current and legacy proof lanes use distinct paths and immutable artifact mounts.
+  caddy:
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    container_name: siphon-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Injected into the /aspv2/* upstream Authorization header (see Caddyfile). Kept out of the
+      # Caddyfile because that file is in git; fail fast rather than serving an empty Bearer, which
+      # would 401 every compliance call with nothing in the logs pointing at a missing variable.
+      - ASPV2_SCREEN_TOKEN=${ASPV2_SCREEN_TOKEN:?ASPV2_SCREEN_TOKEN must be set}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      proving-relayer:
+        condition: service_healthy
+      proving-relayer-legacy:
+        condition: service_healthy
+      siphon-app-current:
+        condition: service_healthy
+      siphon-app-legacy:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "25m"
+        max-file: "4"
+
+  # 1. Python Trade Executor (The Manager)
+  trade-executor:
+    build: ./trade-executor
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/siphon-trade-executor:${VERSION:-latest}
+    container_name: siphon-trade-executor
+    # Bind to loopback only: public traffic must arrive via Caddy (TLS), which reaches this
+    # container as trade-executor:5005 over the compose network. Publishing on 0.0.0.0 exposed
+    # every executor endpoint in plaintext HTTP alongside the TLS path.
+    ports:
+      - "127.0.0.1:5005:5005"
+    environment:
+      # Error tracking (GAPS Epic 3). Unset -> observability.py no-ops, so this is inert
+      # until a DSN is present. Redaction rules live in each service's observability.py.
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      # Session-key delegation origin pin (session_key.py). Comma-separated hosts, matching
+      # window.location.host — the apex, www, and the localhost origins Caddy already allows for
+      # local frontends. Unset = no constraint, which is the pre-session-key behaviour; a value
+      # that omits a host users actually browse from hard-401s them with no client-side fallback.
+      - SESSION_EXPECTED_DOMAIN=${SESSION_EXPECTED_DOMAIN:-}
+      - SIPHON_ENV=${SIPHON_ENV:-production}
+      # Allow large FHE uploads (compressed server key ~23MB). Flask default is 16MB → 413.
+      - MAX_CONTENT_LENGTH=134217728
+      # Connect to FHE Engine (service name 'fhe-engine' acts as hostname)
+      - FHE_ENGINE_URL=http://fhe-engine:5001/evaluateStrategy
+      - FHE_ENGINE_BRACKET_URL=http://fhe-engine:5001/evaluate_bracket_order
+      - FHE_ENGINE_LIMIT_BUY_URL=http://fhe-engine:5001/evaluate_limit_buy
+      - FHE_ENGINE_LIMIT_SELL_URL=http://fhe-engine:5001/evaluate_limit_sell
+
+      # External Services
+      - PYTH_HERMES_URL=https://hermes.pyth.network
+      - ARKIV_RPC_URL=${ARKIV_RPC_URL:-}
+
+      # Solana RPC
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL}
+
+      # Absolute path — Flask-SQLAlchemy otherwise nests relative sqlite URLs under /app/instance/
+      - DATABASE_URI=sqlite:////app/data/strategies.db?timeout=30
+
+      # Auth (must match across services)
+      - API_TOKEN=${API_TOKEN:?API_TOKEN must be set}
+      - API_TOKEN_OLD=${API_TOKEN_OLD:-}
+      - ENFORCE_WALLET_AUTH=${ENFORCE_WALLET_AUTH:-1}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-}
+      - RECEIPT_SIGNER_DEV_KEY=${RECEIPT_SIGNER_DEV_KEY:-}
+      - PYTHONUNBUFFERED=1
+      # Keep the API/withdraw relayer available while strategy rows are reconciled.
+      # The dedicated scheduler process remains disabled until the operator flips this gate.
+      - RUN_SCHEDULER_IN_WORKER=${RUN_SCHEDULER_IN_WORKER:-0}
+      # Supabase note DB + nullifier-registry HMAC (new in integration)
+      - NOTE_DB_URI=${NOTE_DB_URI:?NOTE_DB_URI must be set}
+      - SERVER_HMAC_SECRET=${SERVER_HMAC_SECRET:?SERVER_HMAC_SECRET must be set}
+      - ADMIN_GATED_CHAIN_IDS=${ADMIN_GATED_CHAIN_IDS:-11155111,998}
+      - ETH_SEPOLIA_ADMIN_WALLETS=${ETH_SEPOLIA_ADMIN_WALLETS:-}
+      - TRADE_EXECUTOR_BASE_URL=${TRADE_EXECUTOR_BASE_URL:-http://localhost:5005}
+      - FEE_ENABLED=${FEE_ENABLED:-1}
+      - ADMIN_API_TOKEN=${ADMIN_API_TOKEN:-}
+      # Hard ASP membership is mandatory in production. HTTP membership and the configured
+      # Entrypoint's currentAspRoot must agree before a strategy can be armed.
+      # v1 hard-ASP by default. The v5 lane overrides this via .env to the aspv5 container, which
+      # serves the same /set/root and /set/member that asp_membership.py reads. Pinned here, a box
+      # cut over to v5 kept talking to the v1 ASP with no way to say otherwise.
+      - ASP_URL=${ASP_URL:-http://asp:5055}
+      - ASP_SCREEN_TOKEN=${ASP_SCREEN_TOKEN:?ASP_SCREEN_TOKEN must be set}
+      - ASP_REQUIRE_ONCHAIN_ROOT=1
+      - ASP_ALLOW_LABEL_FAIL_OPEN=0
+      # v3 chains screen against the v2 ASP: separate service, separate database, separate screen
+      # token. Left unset the v3 membership check fails closed, same as ASP_URL does for v1.
+      - ASP_V2_URL=${ASP_V2_URL:-}
+      - ASP_V2_SCREEN_TOKEN=${ASP_V2_SCREEN_TOKEN:-}
+      # Server-owned generation policy. Base remains blank (strategies disabled) until its new
+      # Hard ASP deployment passes the production gates; Sepolia must name the reviewed active lane.
+      - ACTIVE_VAULT_GENERATION_8453=${ACTIVE_VAULT_GENERATION_8453:-}
+      - ACTIVE_VAULT_GENERATION_11155111=${ACTIVE_VAULT_GENERATION_11155111:?ACTIVE_VAULT_GENERATION_11155111 must be set}
+      # Three-way provenance bind: claimed generation == chain-scoped indexer == configured vault.
+      # Base deliberately has no default indexer generation until a separate current-generation
+      # schema exists; merely setting ACTIVE_VAULT_GENERATION_8453 cannot open strategies.
+      - INDEXER_VAULT_GENERATION_8453=${INDEXER_VAULT_GENERATION_8453:-}
+      - INDEXER_VAULT_GENERATION_11155111=${INDEXER_VAULT_GENERATION_11155111:?INDEXER_VAULT_GENERATION_11155111 must be set}
+      - ACTIVE_VAULT_ENTRYPOINT_8453=${BASE_MAINNET_ENTRYPOINT:-}
+      - ACTIVE_VAULT_ENTRYPOINT_11155111=${ETH_SEPOLIA_ENTRYPOINT:?ETH_SEPOLIA_ENTRYPOINT must be set}
+      - EXIT_ONLY_VAULT_GENERATIONS=${EXIT_ONLY_VAULT_GENERATIONS:?EXIT_ONLY_VAULT_GENERATIONS must be set}
+      # Checksum-pinned canonical generation manifest: the single source of truth for
+      # lifecycle/entrypoint/vault addresses. Env values above may only agree with it.
+      - GENERATION_MANIFEST_PATH=/etc/siphon/generation-manifest.json
+      - GENERATION_MANIFEST_SHA256=${GENERATION_MANIFEST_SHA256:?GENERATION_MANIFEST_SHA256 must pin config/generation-manifest.json}
+
+      # Polymarket TEE signing: when set, ALL Polygon signing (orders/approvals/redemptions)
+      # happens in the Phala CVM order-signer; no key or CLOB creds needed on this box.
+      - ORDER_SIGNER_URL=${ORDER_SIGNER_URL:-}
+      - ORDER_SIGNER_TOKEN=${ORDER_SIGNER_TOKEN:-}
+      # Pinned enclave measurement (compose-hash) — executor refuses to bridge to the signer
+      # unless its attestation embeds this exact value. Empty = verify report_data only.
+      - ORDER_SIGNER_MEASUREMENT=${ORDER_SIGNER_MEASUREMENT:-}
+      # Remote EVM signing (vault withdrawals + swaps) in the same CVM signer. When set, no EVM
+      # private key exists on this box.
+      - EVM_SIGNER_URL=${EVM_SIGNER_URL:-}
+      - EVM_SIGNER_TOKEN=${EVM_SIGNER_TOKEN:-}
+      # Polymarket (private markets). Builder code is attributed on every order; the rest gate
+      # actual order placement (polymarket_client.is_configured()).
+      - POLYMARKET_BUILDER_CODE=${POLYMARKET_BUILDER_CODE:-}
+      - POLYGON_EXECUTOR_KEY=${POLYGON_EXECUTOR_KEY:-}
+      - POLYMARKET_API_KEY=${POLYMARKET_API_KEY:-}
+      - POLYMARKET_API_SECRET=${POLYMARKET_API_SECRET:-}
+      - POLYMARKET_API_PASSPHRASE=${POLYMARKET_API_PASSPHRASE:-}
+      - POLYMARKET_FUNDER=${POLYMARKET_FUNDER:-}
+      - POLYGON_RPC=${POLYGON_RPC:-}
+
+      # Secrets
+      - SYPHON_VAULT_CONTRACT_ADDRESS=${SYPHON_VAULT_CONTRACT_ADDRESS:-}
+      - EXECUTOR_PRIVATE_KEY=${EXECUTOR_PRIVATE_KEY}
+
+      # EVM — multi-chain (strategy from_chain selects RPC + contracts)
+      - ETH_RPC_URL=${ETH_RPC_URL}
+      - EVM_EXECUTOR_KEY=${EVM_EXECUTOR_KEY:-}
+      - BASE_EXECUTOR_KEY=${BASE_EXECUTOR_KEY:-}
+      - ETH_SEPOLIA_EXECUTOR_KEY=${ETH_SEPOLIA_EXECUTOR_KEY:-}
+      - BASE_EXECUTOR_ADDRESS=${BASE_EXECUTOR_ADDRESS:?set to the allowlisted Base executor address}
+      - ETH_SEPOLIA_EXECUTOR_ADDRESS=${ETH_SEPOLIA_EXECUTOR_ADDRESS:-}
+      - ACTIVE_VAULT_GENERATION_8453=${ACTIVE_VAULT_GENERATION_8453:?set to the active Base vault generation}
+      - ACTIVE_VAULT_GENERATION_11155111=${ACTIVE_VAULT_GENERATION_11155111:-sepolia-hard-asp-v5-20260819}
+      - EXIT_ONLY_VAULT_GENERATIONS=${EXIT_ONLY_VAULT_GENERATIONS:-base-soft-era,sepolia-soft-era}
+      - ENTRYPOINT_ADDRESS=${ENTRYPOINT_ADDRESS}
+      - UNISWAP_V3_ROUTER=${UNISWAP_V3_ROUTER}
+      - WETH_ADDRESS=${WETH_ADDRESS}
+      - USDC_ADDRESS=${USDC_ADDRESS}
+      - BASE_MAINNET_RPC=http://siphon-base-rpc:8545
+      - BASE_MAINNET_ENTRYPOINT=${BASE_MAINNET_ENTRYPOINT:-}
+      - BASE_MAINNET_UNISWAP_V3_ROUTER=${BASE_MAINNET_UNISWAP_V3_ROUTER:-}
+      - BASE_MAINNET_WETH=${BASE_MAINNET_WETH:-}
+      - BASE_MAINNET_USDC=${BASE_MAINNET_USDC:-}
+      - ETH_SEPOLIA_RPC=${ETH_SEPOLIA_RPC:-}
+      - ETH_SEPOLIA_ENTRYPOINT=${ETH_SEPOLIA_ENTRYPOINT:-}
+      - ETH_SEPOLIA_UNISWAP_V3_ROUTER=${ETH_SEPOLIA_UNISWAP_V3_ROUTER:-}
+      - ETH_SEPOLIA_UNISWAP_V3_FACTORY=${ETH_SEPOLIA_UNISWAP_V3_FACTORY:-}
+      - ETH_SEPOLIA_WETH=${ETH_SEPOLIA_WETH:-}
+      - ETH_SEPOLIA_USDC=${ETH_SEPOLIA_USDC:-}
+      # v2/v3 VaultKernel, resolved from server config only — never from a request, or a caller
+      # could aim a valid proof at a contract of their choosing. Without these forwarded the
+      # executor reads "" and /relaySpend answers 503 for the chain while looking healthy.
+      - ETH_SEPOLIA_VAULT_KERNEL=${ETH_SEPOLIA_VAULT_KERNEL:-}
+      - BASE_MAINNET_VAULT_KERNEL=${BASE_MAINNET_VAULT_KERNEL:-}
+      - DB_ENCRYPTION_KEY=${DB_ENCRYPTION_KEY:?DB_ENCRYPTION_KEY must be set}
+      - JUPITER_API_URL=${JUPITER_API_URL:-https://quote-api.jup.ag/v6}
+      - LIFI_API_KEY=${LIFI_API_KEY:-}
+      - SKIP_ZK_VERIFY=${SKIP_ZK_VERIFY:-false}
+      - DECRYPTOR_URL=${DECRYPTOR_URL:?DECRYPTOR_URL must be set}
+      # Shared secret for the decryptor's /clientKey + /decrypt routes. Must equal the CVM
+      # decryptor's DECRYPTOR_AUTH_TOKEN on both sides.
+      - DECRYPTOR_AUTH_TOKEN=${DECRYPTOR_AUTH_TOKEN:?DECRYPTOR_AUTH_TOKEN must be set}
+
+      # Ponder indexer DB — serves /vault-index/* (leaf + deposit reads for the frontend)
+      - INDEXER_DB_URI_BASE=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_indexer?options=-csearch_path%3Dfeepool2_base_legacy,public
+      # Intentionally blank until Base Hard ASP has its own isolated current schema.
+      - INDEXER_DB_URI_BASE_CURRENT=${INDEXER_DB_URI_BASE_CURRENT:-}
+      - INDEXER_DB_URI_SEPOLIA=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_indexer?options=-csearch_path%3Dfeepool2_sepolia_current,public
+
+      # Dashboard API key gate for createStrategy (verify via api-gateway /v1/keys/verify).
+      # Fail closed: direct createStrategy calls must carry a user API key verified by the gateway.
+      - SIPHON_API_GATEWAY_URL=${SIPHON_API_GATEWAY_URL:-http://api-gateway:8000}
+      - REQUIRE_USER_API_KEY=${REQUIRE_USER_API_KEY:-1}
+
+    volumes:
+      # Persist database
+      - trade-executor-data:/app/data
+      - ./config/generation-manifest.json:/etc/siphon/generation-manifest.json:ro
+    depends_on:
+      fhe-engine:
+        condition: service_healthy
+      asp:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5005/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # 2. Rust FHE Engine (The Calculator)
+  fhe-engine:
+    build: ./fhe
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/siphon-fhe-engine:${VERSION:-latest}
+    container_name: syphon-fhe-engine
+    # No host port: the engine is reached only by the trade-executor over the internal compose
+    # network (fhe-engine:5001). It has no authentication and does very expensive homomorphic
+    # work, so it must never be reachable from the public internet.
+    expose:
+      - "5001"
+    environment:
+      - RUST_LOG=info
+      - API_TOKEN=${API_TOKEN:?API_TOKEN must be set}
+      - API_TOKEN_OLD=${API_TOKEN_OLD:-}
+      - RECEIPT_SIGNER_DEV_KEY=${RECEIPT_SIGNER_DEV_KEY:-}
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'  # box has 2 vCPUs; '4' exceeds the daemon limit and breaks `up -d`
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5001/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # 3. Postgres — indexer database only (strategies stay on sqlite). Internal-only: no host port.
+  postgres:
+    image: postgres:15-alpine
+    container_name: siphon-postgres
+    environment:
+      POSTGRES_USER: siphon
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: siphon_strategies
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U siphon -d siphon_strategies" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # Durable API rate-limit/replay cache. Production explicitly refuses the in-process
+  # memory:// fallback because multiple Gunicorn workers would not share replay state.
+  redis:
+    image: redis:7-alpine
+    container_name: siphon-redis
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 320M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "25m"
+        max-file: "3"
+
+  # 3b. Hard ASP association-set provider. Internal-only: browsers and public clients never get
+  # postman/admin credentials. The executor uses only the read/screen token.
+  asp:
+    build: ../siphon-asp
+    container_name: siphon-asp
+    expose:
+      - "5055"
+    environment:
+      - ASP_ENV=production
+      - SIPHON_ENV=production
+      - ASP_DATABASE_URL=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_asp
+      - ASP_REQUIRE_AUTH=1
+      - ASP_SCREEN_TOKEN=${ASP_SCREEN_TOKEN:?ASP_SCREEN_TOKEN must be set}
+      - ASP_POSTMAN_TOKEN=${ASP_POSTMAN_TOKEN:?ASP_POSTMAN_TOKEN must be set}
+      - ASP_ADMIN_TOKEN=${ASP_ADMIN_TOKEN:?ASP_ADMIN_TOKEN must be set}
+      - ASP_POSTMAN_ADDRESS=${ASP_POSTMAN_ADDRESS:?ASP_POSTMAN_ADDRESS must be set}
+      - ASP_POSTMAN_KEY=${ASP_POSTMAN_KEY:?ASP_POSTMAN_KEY must be set}
+      - ASP_ENTRYPOINT_8453=${BASE_HARD_ASP_ENTRYPOINT:-}
+      - ASP_ENTRYPOINT_11155111=${ETH_SEPOLIA_ENTRYPOINT:?ETH_SEPOLIA_ENTRYPOINT must be set}
+      - ASP_RPC_URLS=8453:${BASE_MAINNET_RPC:?BASE_MAINNET_RPC must be set},11155111:${ETH_SEPOLIA_RPC:?ETH_SEPOLIA_RPC must be set}
+      # The postman is intentionally single-chain even though screening reads multiple chains.
+      # Pin its writer RPC explicitly for the active deployment/rehearsal lane.
+      - ASP_POSTMAN_RPC=${ASP_POSTMAN_RPC:?ASP_POSTMAN_RPC must be set}
+      # Staging starts read-only. Enable root publication only after indexer catch-up,
+      # seeded-list freshness and postman/on-chain address checks all pass.
+      - ASP_AUTO_PUBLISH_ROOT=${ASP_AUTO_PUBLISH_ROOT:-0}
+      - ASP_REQUIRE_SEEDED_LISTS=1
+      - ASP_ORACLE_FAIL_CLOSED=1
+      - ASP_INDEXER_FAIL_CLOSED=1
+      # Until Base Hard ASP exists, ASP readiness follows the active Sepolia Hard ASP lane.
+      - INDEXER_HTTP_URL=http://siphon-indexer-sepolia:42069
+      - ASP_CHAIN_MIN_CONFIRMATIONS=${ASP_CHAIN_MIN_CONFIRMATIONS:-2}
+      - ASP_OFAC_MAX_AGE_HOURS=${ASP_OFAC_MAX_AGE_HOURS:-48}
+      - ASP_ALLOW_SKIP_SCREEN=0
+      - ASP_ALLOW_SKIP_SCREEN_MAINNET=0
+      - ASP_WATCHER_REQUIRED=${ASP_WATCHER_REQUIRED:-0}
+      - ASP_WATCHER_MAX_AGE=${ASP_WATCHER_MAX_AGE:-90}
+      - ETHERSCAN_API_KEY=${ETHERSCAN_API_KEY:-}
+      - ASP_IPFS_CID=${ASP_IPFS_CID:-}
+      # Checksum-pinned canonical generation manifest (see trade-executor comment).
+      - GENERATION_MANIFEST_PATH=/etc/siphon/generation-manifest.json
+      - GENERATION_MANIFEST_SHA256=${GENERATION_MANIFEST_SHA256:?GENERATION_MANIFEST_SHA256 must pin config/generation-manifest.json}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./config/generation-manifest.json:/etc/siphon/generation-manifest.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      siphon-indexer-sepolia:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 768M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "25m"
+        max-file: "4"
+    healthcheck:
+      # Liveness alone is insufficient: the executor must not start until the
+      # screening lists are seeded and the chain/indexer dependencies are ready.
+      test: [ "CMD", "curl", "-f", "http://localhost:5055/ready" ]
+      interval: 30s
+      timeout: 10s
+      retries: 4
+      start_period: 30s
+
+  # Exactly one supervised chain watcher admits labels for new Hard ASP deposits. Keeping this
+  # out of Gunicorn prevents one watcher per web worker and makes crashes independently visible.
+  asp-watcher:
+    profiles: ["hard-asp-writes"]
+    build: ../siphon-asp
+    container_name: siphon-asp-watcher
+    command: ["python", "watcher.py"]
+    environment:
+      - ASP_DATABASE_URL=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_asp
+      - ASP_WATCHER_ENABLED=1
+      - ASP_WATCHER_VAULTS=${ASP_WATCHER_VAULTS:-11155111:0x6e0c4A1f7adAf0f80a4881a2635C0AFfE998fBDe,11155111:0x50A3bc1Cd443fe5bd0A9FbF04FF655E4b54Deb3b}
+      - ASP_WATCHER_START_BLOCK_11155111=${SEPOLIA_CURRENT_DEPLOY_BLOCK:-11426483}
+      - ASP_WATCHER_CONFIRMATIONS=${ASP_WATCHER_CONFIRMATIONS:-2}
+      # PublicNode accepts 1,000-block eth_getLogs ranges on this lane. Keeping the value
+      # configurable lets operators lower it for stricter providers without losing checkpoints.
+      - ASP_WATCHER_CHUNK=${ASP_WATCHER_CHUNK:-999}
+      - ASP_RPC_URLS=11155111:${ETH_SEPOLIA_RPC:-https://ethereum-sepolia-rpc.publicnode.com}
+      - ASP_POSTMAN_RPC=${ASP_POSTMAN_RPC:?ASP_POSTMAN_RPC must be set}
+      - ASP_POSTMAN_ADDRESS=${ASP_POSTMAN_ADDRESS:?ASP_POSTMAN_ADDRESS must be set}
+      - ASP_POSTMAN_KEY=${ASP_POSTMAN_KEY:?ASP_POSTMAN_KEY must be set}
+      - ASP_ENTRYPOINT_11155111=${ETH_SEPOLIA_ENTRYPOINT:?ETH_SEPOLIA_ENTRYPOINT must be set}
+      - ASP_AUTO_PUBLISH_ROOT=${ASP_AUTO_PUBLISH_ROOT:-0}
+      # The watcher refuses to start if its entrypoint/vault/postman wiring drifts from
+      # the checksum-pinned generation manifest.
+      - GENERATION_MANIFEST_PATH=/etc/siphon/generation-manifest.json
+      - GENERATION_MANIFEST_SHA256=${GENERATION_MANIFEST_SHA256:?GENERATION_MANIFEST_SHA256 must pin config/generation-manifest.json}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./config/generation-manifest.json:/etc/siphon/generation-manifest.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # Freshness is enforced by the ASP /ready endpoint; this proves the watcher has completed
+      # at least one durable pass instead of inheriting the web image's irrelevant HTTP probe.
+      test: ["CMD", "python", "-c", "from db import session,get_meta; d=session(); assert get_meta(d,'asp_watcher_heartbeat')"]
+      interval: 20s
+      timeout: 8s
+      retries: 4
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "25m"
+        max-file: "4"
+
+  # 4a. Base legacy EXIT_ONLY indexer. Preserve this deployment and schema for old withdrawals;
+  # never repoint it at the future Base Hard ASP contracts.
+  # ---------------------------------------------------------------------------
+  # TEMPLATE (do not enable before the Base Hard ASP deployment passes all gates):
+  # distinct Base-CURRENT indexer. Uncomment after the production deployment,
+  # fill the four addresses from the reviewed deployment manifest, add the
+  # base-hard-asp-v1 entry to config/generation-manifest.json, and re-pin
+  # GENERATION_MANIFEST_SHA256. Never point this at the legacy schema.
+  #
+  # siphon-indexer-base-current:
+  #   build: ../siphon-indexer
+  #   container_name: siphon-indexer-base-current
+  #   init: true
+  #   ports:
+  #     - "127.0.0.1:42072:42069"
+  #   environment:
+  #     - INDEXER_SCOPE=base
+  #     - DATABASE_URL=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_indexer
+  #     - DATABASE_SCHEMA=feepool2_base_current
+  #     - PONDER_RPC_URL_8453=${PONDER_RPC_URL_8453:-https://mainnet.base.org}
+  #     - PONDER_MAX_RPS=${PONDER_MAX_RPS:-8}
+  #     - INDEXER_RETRY_MS=${INDEXER_RETRY_MS:-15000}
+  #     - INDEXER_CHILD_RECYCLE_MS=${INDEXER_CHILD_RECYCLE_MS:-1800000}
+  #     - INDEX_BASE_MIXERS=0
+  #     - INDEX_BASE_BRIDGES=0
+  #     - BASE_DEPLOY_BLOCK=${BASE_CURRENT_DEPLOY_BLOCK:?set from the Base Hard ASP deployment}
+  #     - MERKLE_TREE_BASE_ETH=${MERKLE_TREE_BASE_CURRENT_ETH:?set from the deployment manifest}
+  #     - MERKLE_TREE_BASE_USDC=${MERKLE_TREE_BASE_CURRENT_USDC:?set from the deployment manifest}
+  #     - VAULT_BASE_ETH=${VAULT_BASE_CURRENT_ETH:?set from the deployment manifest}
+  #     - VAULT_BASE_USDC=${VAULT_BASE_CURRENT_USDC:?set from the deployment manifest}
+  #     - INDEXER_GENERATION_ID=base-hard-asp-v1
+  #     - INDEXER_ENTRYPOINT=${BASE_MAINNET_ENTRYPOINT:?set from the deployment manifest}
+  #     - GENERATION_MANIFEST_PATH=/etc/siphon/generation-manifest.json
+  #     - GENERATION_MANIFEST_SHA256=${GENERATION_MANIFEST_SHA256:?GENERATION_MANIFEST_SHA256 must pin config/generation-manifest.json}
+  #   volumes:
+  #     - ./config/generation-manifest.json:/etc/siphon/generation-manifest.json:ro
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #   stop_grace_period: 30s
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 768M
+  #   healthcheck:
+  #     test: ["CMD", "node", "scripts/indexer-health.mjs"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 60s
+  # ---------------------------------------------------------------------------
+
+  siphon-indexer-base:
+    build: ../siphon-indexer
+    container_name: siphon-indexer-base
+    init: true
+    ports:
+      - "127.0.0.1:42069:42069"
+    environment:
+      - INDEXER_SCOPE=base
+      - DATABASE_URL=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_indexer
+      - DATABASE_SCHEMA=feepool2_base_legacy
+      - PONDER_RPC_URL_8453=${PONDER_RPC_URL_8453:-https://mainnet.base.org}
+      - PONDER_MAX_RPS=${PONDER_MAX_RPS:-8}
+      - INDEXER_RETRY_MS=${INDEXER_RETRY_MS:-15000}
+      - INDEXER_CHILD_RECYCLE_MS=${INDEXER_CHILD_RECYCLE_MS:-1800000}
+      # Keep the withdrawal-critical process vault-only. Mixer/bridge analytics belong in a
+      # separate non-critical worker and must never extend or destabilize Base proof-data sync.
+      - INDEX_BASE_MIXERS=0
+      - INDEX_BASE_BRIDGES=0
+      - BASE_DEPLOY_BLOCK=${BASE_LEGACY_DEPLOY_BLOCK:-48703312}
+      - MERKLE_TREE_BASE_ETH=${MERKLE_TREE_BASE_LEGACY_ETH:-0x5A41739d8b0Abe8526215E7CDFf91d1dac6Cd71b}
+      - MERKLE_TREE_BASE_USDC=${MERKLE_TREE_BASE_LEGACY_USDC:-0x71fF03a0214ac20B8AA55AdA8665F31F7142D437}
+      - VAULT_BASE_ETH=${VAULT_BASE_LEGACY_ETH:-0x83A22415864782830dfa3078F0c574E226E741cC}
+      - VAULT_BASE_USDC=${VAULT_BASE_LEGACY_USDC:-0x3F92B94131Df4F8B26a1fB61A3C49FC82679aF33}
+      # Identity + manifest binding: this process refuses to start if its addresses
+      # drift from the checksum-pinned generation manifest.
+      - INDEXER_GENERATION_ID=base-legacy-2026-07
+      - INDEXER_ENTRYPOINT=${BASE_LEGACY_ENTRYPOINT:-0x5433995fc5a0459E5ad7f2A81561384887F37174}
+      - GENERATION_MANIFEST_PATH=/etc/siphon/generation-manifest.json
+      - GENERATION_MANIFEST_SHA256=${GENERATION_MANIFEST_SHA256:?GENERATION_MANIFEST_SHA256 must pin config/generation-manifest.json}
+    volumes:
+      - ./config/generation-manifest.json:/etc/siphon/generation-manifest.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    healthcheck:
+      test: [ "CMD", "node", "scripts/indexer-health.mjs" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # 4b. Active Ethereum Sepolia Hard ASP indexer. Independent process, RPC and schema.
+  siphon-indexer-sepolia:
+    build: ../siphon-indexer
+    container_name: siphon-indexer-sepolia
+    init: true
+    ports:
+      - "127.0.0.1:42070:42069"
+    environment:
+      - INDEXER_SCOPE=sepolia
+      - DATABASE_URL=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_indexer
+      - DATABASE_SCHEMA=feepool2_sepolia_current
+      - PONDER_RPC_URL_11155111=${PONDER_RPC_URL_11155111:-https://ethereum-sepolia-rpc.publicnode.com}
+      - PONDER_MAX_RPS=${PONDER_MAX_RPS:-8}
+      - INDEXER_RETRY_MS=${INDEXER_RETRY_MS:-15000}
+      - INDEXER_CHILD_RECYCLE_MS=${INDEXER_CHILD_RECYCLE_MS:-1800000}
+      - SEPOLIA_LOG_MAXRANGE=${SEPOLIA_LOG_MAXRANGE:-9000}
+      - SEPOLIA_DEPLOY_BLOCK=${SEPOLIA_CURRENT_DEPLOY_BLOCK:-11426483}
+      - MERKLE_TREE_SEPOLIA_ETH=${MERKLE_TREE_SEPOLIA_CURRENT_ETH:-0x2a9C7e0603611062C872FA58083Da4394aa8623a}
+      - MERKLE_TREE_SEPOLIA_USDC=${MERKLE_TREE_SEPOLIA_CURRENT_USDC:-0xE895a7ECbF7Ea9fb856CE685145B1C8fc97bBd28}
+      - VAULT_SEPOLIA_ETH=${VAULT_SEPOLIA_CURRENT_ETH:-0x6e0c4A1f7adAf0f80a4881a2635C0AFfE998fBDe}
+      - VAULT_SEPOLIA_USDC=${VAULT_SEPOLIA_CURRENT_USDC:-0x50A3bc1Cd443fe5bd0A9FbF04FF655E4b54Deb3b}
+      # Identity + manifest binding (see indexer-base comment).
+      - INDEXER_GENERATION_ID=${INDEXER_VAULT_GENERATION_11155111:?INDEXER_VAULT_GENERATION_11155111 must be set}
+      - INDEXER_ENTRYPOINT=${ETH_SEPOLIA_ENTRYPOINT:?ETH_SEPOLIA_ENTRYPOINT must be set}
+      - GENERATION_MANIFEST_PATH=/etc/siphon/generation-manifest.json
+      - GENERATION_MANIFEST_SHA256=${GENERATION_MANIFEST_SHA256:?GENERATION_MANIFEST_SHA256 must pin config/generation-manifest.json}
+    volumes:
+      - ./config/generation-manifest.json:/etc/siphon/generation-manifest.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    healthcheck:
+      test: [ "CMD", "node", "scripts/indexer-health.mjs" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # 4c. Sepolia soft-era EXIT_ONLY indexer. It keeps old commitments discoverable without
+  # allowing its cursor or RPC failures to affect the current Hard ASP lane.
+  siphon-indexer-sepolia-legacy:
+    build: ../siphon-indexer
+    container_name: siphon-indexer-sepolia-legacy
+    init: true
+    ports:
+      - "127.0.0.1:42071:42069"
+    environment:
+      - INDEXER_SCOPE=sepolia
+      - DATABASE_URL=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_indexer
+      - DATABASE_SCHEMA=feepool2_sepolia_legacy
+      - PONDER_RPC_URL_11155111=${PONDER_RPC_URL_11155111:-https://ethereum-sepolia-rpc.publicnode.com}
+      - PONDER_MAX_RPS=${PONDER_MAX_RPS:-8}
+      - INDEXER_RETRY_MS=${INDEXER_RETRY_MS:-15000}
+      - INDEXER_CHILD_RECYCLE_MS=${INDEXER_CHILD_RECYCLE_MS:-1800000}
+      - SEPOLIA_LOG_MAXRANGE=${SEPOLIA_LOG_MAXRANGE:-9000}
+      - SEPOLIA_DEPLOY_BLOCK=${SEPOLIA_LEGACY_DEPLOY_BLOCK:-11278082}
+      - MERKLE_TREE_SEPOLIA_ETH=${MERKLE_TREE_SEPOLIA_LEGACY_ETH:-0xC7Ad7eA094942239218ABE33D1EbD77349Bd8f99}
+      - MERKLE_TREE_SEPOLIA_USDC=${MERKLE_TREE_SEPOLIA_LEGACY_USDC:-0x20EfA6c1138570600BE6ad4F60965696D5BC88DD}
+      - VAULT_SEPOLIA_ETH=${VAULT_SEPOLIA_LEGACY_ETH:-0x8BC94f9b057CB56D5F32d1B8D509Ce239A9Cc249}
+      - VAULT_SEPOLIA_USDC=${VAULT_SEPOLIA_LEGACY_USDC:-0x8Ce8bb803e53E807447e0da405025A0975d9A773}
+      # Identity + manifest binding (see indexer-base comment).
+      - INDEXER_GENERATION_ID=sepolia-soft-era
+      - INDEXER_ENTRYPOINT=${SEPOLIA_LEGACY_ENTRYPOINT:-0xE5126A49D1bb93957b4B2F63BCB05a1F8EA9e705}
+      - GENERATION_MANIFEST_PATH=/etc/siphon/generation-manifest.json
+      - GENERATION_MANIFEST_SHA256=${GENERATION_MANIFEST_SHA256:?GENERATION_MANIFEST_SHA256 must pin config/generation-manifest.json}
+    volumes:
+      - ./config/generation-manifest.json:/etc/siphon/generation-manifest.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    healthcheck:
+      test: [ "CMD", "node", "scripts/indexer-health.mjs" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # 5. API gateway — /v1/keys packs, purchase, verify (createStrategy hard gate).
+  # Caddy routes /v1/* here. Fresh postgres volumes get siphon_gateway via docker/postgres-init;
+  # existing volumes need: CREATE DATABASE siphon_gateway; (once).
+  api-gateway:
+    build: ./api-gateway
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/siphon-api-gateway:${VERSION:-latest}
+    container_name: siphon-api-gateway
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      # Error tracking (GAPS Epic 3). Unset -> observability.py no-ops, so this is inert
+      # until a DSN is present. Redaction rules live in each service's observability.py.
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      # Session-key delegation origin pin (session_key.py). Comma-separated hosts, matching
+      # window.location.host — the apex, www, and the localhost origins Caddy already allows for
+      # local frontends. Unset = no constraint, which is the pre-session-key behaviour; a value
+      # that omits a host users actually browse from hard-401s them with no client-side fallback.
+      - SESSION_EXPECTED_DOMAIN=${SESSION_EXPECTED_DOMAIN:-}
+      - SIPHON_ENV=${API_GATEWAY_SIPHON_ENV:-production}
+      - DATABASE_URL=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_gateway
+      - REDIS_URL=${API_GATEWAY_REDIS_URL:?API_GATEWAY_REDIS_URL must be set}
+      - RECONCILE_ENABLED=${API_GATEWAY_RECONCILE_ENABLED:-false}
+      - RUN_RECONCILER_IN_WORKER=0
+      - RUN_WEBHOOKS_IN_WORKER=0
+      - RUN_OPERATION_MONITOR_IN_WORKER=0
+      - API_KEY_PEPPER=${API_KEY_PEPPER:?API_KEY_PEPPER must be set}
+      - BILLING_REF_HMAC_KEY=${BILLING_REF_HMAC_KEY:?BILLING_REF_HMAC_KEY must be set}
+      # Signs compliance receipts. app/boot_guards.py ABORTS startup in production while this is
+      # still the dev default, so an unset value is a crash loop, not a silent weak key — required
+      # here rather than defaulted for that reason.
+      - RECEIPT_SIGNING_KEY=${RECEIPT_SIGNING_KEY:?RECEIPT_SIGNING_KEY must be set}
+      - EXECUTOR_URL=http://trade-executor:5005
+      - EXECUTOR_API_TOKEN=${API_TOKEN:?API_TOKEN must be set}
+      - RELAYER_URL=http://proving-relayer:5010
+      - INDEXER_URL_BASE=http://siphon-indexer-base:42069
+      - INDEXER_URL_SEPOLIA=http://siphon-indexer-sepolia:42069
+      - INDEXER_URL_SEPOLIA_LEGACY=http://siphon-indexer-sepolia-legacy:42069
+      - BASE_MAINNET_RPC=http://siphon-base-rpc:8545
+      - ETH_SEPOLIA_RPC=${ETH_SEPOLIA_RPC:-https://ethereum-sepolia-rpc.publicnode.com}
+      # v5 (VaultKernel) per-chain services — gateway 2.0. No cross-chain fallback by design:
+      # an unset chain answers 503 rather than borrowing another chain's credentials.
+      - ARBITRUM_RPC=${ARBITRUM_RPC:-https://arb1.arbitrum.io/rpc}
+      - ASP_URL=http://siphon-aspv5-asp-1:5056
+      - ASP_SCREEN_TOKEN=${GATEWAY_V5_ASP_SCREEN_TOKEN:?GATEWAY_V5_ASP_SCREEN_TOKEN must be set}
+      - ASP_POSTMAN_TOKEN=${GATEWAY_V5_ASP_POSTMAN_TOKEN:?GATEWAY_V5_ASP_POSTMAN_TOKEN must be set}
+      - V5_INDEXER_URL_8453=http://siphon-indexer-v3base:42069
+      - V5_INDEXER_URL_42161=https://16-192-140-158.sslip.io/idx
+      - EXECUTOR_URL_42161=https://16-192-140-158.sslip.io
+      - ASP_URL_42161=https://16-192-140-158.sslip.io/aspv5
+      - ASP_SCREEN_TOKEN_42161=${GATEWAY_ASP_SCREEN_TOKEN_42161:-}
+      - ASP_POSTMAN_TOKEN_42161=${GATEWAY_ASP_POSTMAN_TOKEN_42161:-}
+      - API_CREDIT_COLLECTOR=${API_CREDIT_COLLECTOR:-}
+      - ACTIVE_VAULT_GENERATION_8453=${ACTIVE_VAULT_GENERATION_8453:-}
+      - ACTIVE_VAULT_GENERATION_11155111=${ACTIVE_VAULT_GENERATION_11155111:?ACTIVE_VAULT_GENERATION_11155111 must be set}
+      - EXIT_ONLY_VAULT_GENERATIONS=${EXIT_ONLY_VAULT_GENERATIONS:?EXIT_ONLY_VAULT_GENERATIONS must be set}
+      # Checksum-pinned canonical generation manifest (see trade-executor comment).
+      - GENERATION_MANIFEST_PATH=/etc/siphon/generation-manifest.json
+      - GENERATION_MANIFEST_SHA256=${GENERATION_MANIFEST_SHA256:?GENERATION_MANIFEST_SHA256 must pin config/generation-manifest.json}
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      trade-executor:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/v1/liveness" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    volumes:
+      # Gateway reuses the executor sanctions helper and its import-time ASP dependency.
+      - ./trade-executor/address_validator.py:/app/address_validator.py:ro
+      - ./trade-executor/asp_membership.py:/app/asp_membership.py:ro
+      # Session-key delegation verifier. app/reuse.py imports it at module scope, so without this
+      # mount every gateway worker dies at import with "No module named 'session_key'" — the
+      # pythonpath in pytest.ini makes the tests pass while the container refuses to boot.
+      - ./trade-executor/session_key.py:/app/session_key.py:ro
+      # /v1/deposits resolves asset addresses through the executor chain config; without
+      # this mount the route 400s with "No module named 'evm_chain_config'".
+      - ./trade-executor/evm_chain_config.py:/app/evm_chain_config.py:ro
+      - ./config/generation-manifest.json:/etc/siphon/generation-manifest.json:ro
+
+  # Single owner for usage reconciliation, chain confirmation, and webhook delivery. Keeping these
+  # loops out of Gunicorn prevents duplicate polling and duplicate webhook enqueue/delivery races.
+  api-gateway-worker:
+    build: ./api-gateway
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/siphon-api-gateway:${VERSION:-latest}
+    container_name: siphon-api-gateway-worker
+    command: ["python", "worker_main.py"]
+    # The image's HEALTHCHECK curls /v1/liveness, which only exists under gunicorn. This service
+    # runs the background loops instead, so that probe can never pass and the container sits
+    # permanently "unhealthy" — which is how a real failure here would go unnoticed. There is no
+    # endpoint to substitute, and a process check adds nothing over the restart policy: if
+    # worker_main exits, the container exits. No healthcheck is the honest state.
+    healthcheck:
+      disable: true
+    environment:
+      - SIPHON_ENV=${API_GATEWAY_SIPHON_ENV:-production}
+      - DATABASE_URL=postgresql://siphon:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/siphon_gateway
+      # Pinned, never a memory:// fallback: an in-process limiter is per-worker and resets on
+      # restart, so the rate limit silently stops being a rate limit. The `redis` service in this
+      # file is always present. test_indexer_compose_isolation pins this.
+      - REDIS_URL=redis://redis:6379/0
+      - RECONCILE_ENABLED=${API_GATEWAY_RECONCILE_ENABLED:-true}
+      - OPERATION_MONITOR_ENABLED=${API_GATEWAY_OPERATION_MONITOR_ENABLED:-true}
+      - WEBHOOK_ENABLED=${API_GATEWAY_WEBHOOK_ENABLED:-true}
+      - API_KEY_PEPPER=${API_KEY_PEPPER:?API_KEY_PEPPER must be set}
+      - BILLING_REF_HMAC_KEY=${BILLING_REF_HMAC_KEY:?BILLING_REF_HMAC_KEY must be set}
+      # Signs compliance receipts. app/boot_guards.py ABORTS startup in production while this is
+      # still the dev default, so an unset value is a crash loop, not a silent weak key — required
+      # here rather than defaulted for that reason.
+      - RECEIPT_SIGNING_KEY=${RECEIPT_SIGNING_KEY:?RECEIPT_SIGNING_KEY must be set}
+      - EXECUTOR_URL=http://trade-executor:5005
+      - EXECUTOR_API_TOKEN=${API_TOKEN}
+      - BASE_MAINNET_RPC=http://siphon-base-rpc:8545
+      - ETH_SEPOLIA_RPC=${ETH_SEPOLIA_RPC:-https://ethereum-sepolia-rpc.publicnode.com}
+      # v5 (VaultKernel) per-chain services — gateway 2.0. No cross-chain fallback by design:
+      # an unset chain answers 503 rather than borrowing another chain's credentials.
+      - ARBITRUM_RPC=${ARBITRUM_RPC:-https://arb1.arbitrum.io/rpc}
+      - ASP_URL=http://siphon-aspv5-asp-1:5056
+      - ASP_SCREEN_TOKEN=${GATEWAY_V5_ASP_SCREEN_TOKEN:?GATEWAY_V5_ASP_SCREEN_TOKEN must be set}
+      - ASP_POSTMAN_TOKEN=${GATEWAY_V5_ASP_POSTMAN_TOKEN:?GATEWAY_V5_ASP_POSTMAN_TOKEN must be set}
+      - V5_INDEXER_URL_8453=http://siphon-indexer-v3base:42069
+      - V5_INDEXER_URL_42161=https://16-192-140-158.sslip.io/idx
+      - EXECUTOR_URL_42161=https://16-192-140-158.sslip.io
+      - ASP_URL_42161=https://16-192-140-158.sslip.io/aspv5
+      - ASP_SCREEN_TOKEN_42161=${GATEWAY_ASP_SCREEN_TOKEN_42161:-}
+      - ASP_POSTMAN_TOKEN_42161=${GATEWAY_ASP_POSTMAN_TOKEN_42161:-}
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      trade-executor:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      # The worker imports the SAME dependency chain as the gateway — worker_main ->
+      # operation_monitor -> deps.clients -> adapters.sanctions -> reuse -> address_validator ->
+      # asp_membership. It ran with only address_validator for as long as it could not start at
+      # all; the moment worker_main.py existed it died on `No module named 'asp_membership'`.
+      # Keep this list identical to api-gateway's.
+      - ./trade-executor/address_validator.py:/app/address_validator.py:ro
+      - ./trade-executor/asp_membership.py:/app/asp_membership.py:ro
+      - ./trade-executor/evm_chain_config.py:/app/evm_chain_config.py:ro
+      - ./trade-executor/session_key.py:/app/session_key.py:ro
+
+  # Encryption happens in the browser (siphon-app/fhe-wasm); the client uploads only the
+  # server key + ciphertext. There is no server-side payload generator.
+
+  # Proving Relayer — server-side rapidsnark for /api/prove (else the frontend falls back to
+  # browser snarkjs). Serves withdrawal and merge circuits (w1–w6, m2–m6) from the browser-bundle
+  # artifacts mounted at /app/zk — the SAME zkeys the frontend uses, so proofs verify on-chain.
+  # Witness is calculated with snarkjs (wasm-only), so no generate_witness.js is required.
+  proving-relayer:
+    build: ./proving-relayer
+    container_name: proving-relayer
+    ports:
+      - "127.0.0.1:5010:5010"
+    environment:
+      - PROVING_RELAYER_PORT=5010
+      - ZK_BUILD_DIR=/app/zk
+      - RAPIDSNARK_BIN=/usr/local/bin/rapidsnark
+      - SNARKJS_BIN=snarkjs
+      - NODE_BIN=node
+      # /prove is gated on X-API-TOKEN == API_TOKEN; reuse the shared executor token.
+      - API_TOKEN=${API_TOKEN:?API_TOKEN must be set}
+      - API_TOKEN_OLD=${API_TOKEN_OLD:-}
+      - RECEIPT_SIGNER_DEV_KEY=${RECEIPT_SIGNER_DEV_KEY:-}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Browser-bundle circuit artifacts (siphon-app/public/zk), uploaded to ~/zk-build on the host.
+      - ../zk-build-current:/app/zk:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5010/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Immutable soft-era proving lane for legacy withdrawals. It is isolated from the current
+  # Hard ASP artifact mount so a release can never overwrite the proof bundle old vaults require.
+  proving-relayer-legacy:
+    build: ./proving-relayer
+    container_name: proving-relayer-legacy
+    ports:
+      - "127.0.0.1:5011:5010"
+    environment:
+      - PROVING_RELAYER_PORT=5010
+      - ZK_BUILD_DIR=/app/zk
+      - RAPIDSNARK_BIN=/usr/local/bin/rapidsnark
+      - SNARKJS_BIN=snarkjs
+      - NODE_BIN=node
+      - API_TOKEN=${API_TOKEN:?API_TOKEN must be set}
+      - API_TOKEN_OLD=${API_TOKEN_OLD:-}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ${LEGACY_ZK_BUILD_DIR:-/home/ubuntu/legacy-server-capture/zk-build}:/app/zk:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5010/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  trade-executor-data:
+    driver: local
+  postgres_data:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  default:
+    name: siphon-network
+    driver: bridge

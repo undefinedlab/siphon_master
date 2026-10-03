@@ -1,0 +1,208 @@
+version: '3.8'
+
+services:
+  # 0. Caddy Reverse Proxy (HTTPS)
+  caddy:
+    image: caddy:2-alpine
+    container_name: siphon-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      # Every upstream the Caddyfile names, so Caddy does not start routing before its
+      # backends resolve. api-gateway is intentionally absent: it is defined in
+      # docker-compose.prod.yml, and listing it here would break a dev-only `up`.
+      - trade-executor
+      - proving-relayer
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: siphon-postgres
+    environment:
+      POSTGRES_USER: siphon
+      POSTGRES_PASSWORD: siphon_secure_pass
+      POSTGRES_DB: siphon_strategies
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      # -d siphon_strategies: probe the real DB so the readiness check doesn't log
+      # "FATAL: database \"siphon\" does not exist" (pg_isready defaults dbname to the username).
+      test: [ "CMD-SHELL", "pg_isready -U siphon -d siphon_strategies" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # 1. Python Trade Executor (The Manager)
+  trade-executor:
+    build: ./trade-executor
+    container_name: siphon-trade-executor
+    ports:
+      - "5005:5005"
+    environment:
+      # Default: the Docker engine. LOCAL ARM (Apple Silicon) override: the containerised aarch64
+      # engine computes WRONG FHE results (FFT auto-tuning under the coarse container clock), so
+      # point at a host-native engine via:
+      #   FHE_ENGINE_URL=http://host.docker.internal:5001/evaluateStrategy
+      - FHE_ENGINE_URL=${FHE_ENGINE_URL:-http://fhe-engine:5001/evaluateStrategy}
+      - PYTH_HERMES_URL=https://hermes.pyth.network
+      - DATABASE_URI=postgresql://siphon:siphon_secure_pass@postgres:5432/siphon_strategies
+      - INDEXER_DB_URI=postgresql://siphon:siphon_secure_pass@postgres:5432/siphon_indexer
+      - HELIUS_API_KEY=${HELIUS_API_KEY}
+      - SOLANA_NETWORK=${SOLANA_NETWORK:-devnet}
+      - EXECUTOR_PRIVATE_KEY=${EXECUTOR_PRIVATE_KEY}
+      - DECRYPTOR_URL=${DECRYPTOR_URL:-http://decryptor:5002}
+      # --- required by config.py (raises if missing) ---
+      # Reuse the local postgres for the note/nullifier DB (no Supabase needed for local dev).
+      - NOTE_DB_URI=${NOTE_DB_URI:-postgresql://siphon:siphon_secure_pass@postgres:5432/siphon_strategies}
+      - SERVER_HMAC_SECRET=${SERVER_HMAC_SECRET:-localdev_hmac_secret_change_me}
+      - DB_ENCRYPTION_KEY=${DB_ENCRYPTION_KEY:-localdev_db_encryption_key_change_me}
+      - API_TOKEN=${API_TOKEN:-testtoken123}
+      # Self-referential base URL — executor_runner calls its OWN /nullifier-registry (port 5005,
+      # NOT the 5002 default which is the decryptor!).
+      - TRADE_EXECUTOR_BASE_URL=http://localhost:5005
+      - CHECK_INTERVAL_SECONDS=${CHECK_INTERVAL_SECONDS:-10}
+      # --- Dynamic fee model (inert until FEE_ENABLED=1) ---
+      - FEE_ENABLED=${FEE_ENABLED:-false}
+      - FEE_EXEC_BPS=${FEE_EXEC_BPS:-20}
+      - FEE_MIN_EXEC_USD=${FEE_MIN_EXEC_USD:-0.20}
+      - FEE_GAS_REIMBURSE_USD=${FEE_GAS_REIMBURSE_USD:-0.10}
+      - FEE_BASE_ARM_USD=${FEE_BASE_ARM_USD:-0.20}
+      - FEE_PER_HOUR_ARM_USD=${FEE_PER_HOUR_ARM_USD:-0.05}
+      - FEE_ARM_CAP_USD=${FEE_ARM_CAP_USD:-5.00}
+      - FEE_SWEEP_MIN_USD=${FEE_SWEEP_MIN_USD:-5.00}
+      # --- Base mainnet Hard ASP R2 (2026-08-21) ---
+      - BASE_MAINNET_RPC=${BASE_MAINNET_RPC:-https://mainnet.base.org}
+      - BASE_MAINNET_ENTRYPOINT=${BASE_MAINNET_ENTRYPOINT:-0xA8AD713eDc27b14AA6057C53745479bc6a7E145A}
+      - BASE_EXECUTOR_ADDRESS=${BASE_EXECUTOR_ADDRESS:-0x31c9a52Dc09D5c0e61256cA04156A528ecc63cf9}
+      - ACTIVE_VAULT_GENERATION_8453=${ACTIVE_VAULT_GENERATION_8453:-base-hard-asp-r2-20260821}
+      - ACTIVE_VAULT_GENERATION_11155111=${ACTIVE_VAULT_GENERATION_11155111:-sepolia-hard-asp-v5-20260819}
+      - EXIT_ONLY_VAULT_GENERATIONS=${EXIT_ONLY_VAULT_GENERATIONS:-base-soft-era,sepolia-soft-era}
+      # --- ETH Sepolia (upgraded TWAP/grid contracts) ---
+      - ETH_SEPOLIA_RPC=${ETH_SEPOLIA_RPC:-https://ethereum-sepolia-rpc.publicnode.com}
+      # Generation-specific. The old default (0x3423268…) was two generations stale and would
+      # silently point the executor at a dead Entrypoint. Empty is safer than wrong: the executor
+      # reports an unconfigured chain instead of transacting against contracts nobody can prove
+      # against. Source of truth:
+      # siphon-contracts/evm/ignition/deployments/chain-11155111/deployed_addresses.json
+      - ETH_SEPOLIA_ENTRYPOINT=${ETH_SEPOLIA_ENTRYPOINT:-}
+      - ETH_SEPOLIA_UNISWAP_V3_ROUTER=${ETH_SEPOLIA_UNISWAP_V3_ROUTER:-}
+      - ETH_SEPOLIA_UNISWAP_V3_FACTORY=${ETH_SEPOLIA_UNISWAP_V3_FACTORY:-}
+      - ETH_SEPOLIA_WETH=${ETH_SEPOLIA_WETH:-}
+      - ETH_SEPOLIA_USDC=${ETH_SEPOLIA_USDC:-}
+      # Funded Sepolia signer the proofs are bound to (MUST equal the frontend's
+      # NEXT_PUBLIC_ETH_SEPOLIA_EXECUTOR_ADDRESS). No 0x prefix needed.
+      - ETH_SEPOLIA_EXECUTOR_KEY=${ETH_SEPOLIA_EXECUTOR_KEY:-}
+      # --- admin allow-list (Sepolia is gated) ---
+      - ADMIN_API_TOKEN=${ADMIN_API_TOKEN:-}
+      - ADMIN_GATED_CHAIN_IDS=${ADMIN_GATED_CHAIN_IDS:-11155111,998}
+      - ETH_SEPOLIA_ADMIN_WALLETS=${ETH_SEPOLIA_ADMIN_WALLETS:-0xd5720Ed6e70a128C025D0C284874cd1e33B39688,0x9790a76b15612Cd9323dca3EA3E81E50aAC09090,0xc5b7b574EE84A9B59B475FE32Eaf908C246d3859}
+    volumes:
+      - trade-executor-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      fhe-engine:
+        condition: service_started
+      decryptor:
+        condition: service_started
+    restart: unless-stopped
+
+  # 2b. Confidential VM decryptor (local dev)
+  decryptor:
+    build: ./decryptor
+    container_name: siphon-decryptor
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - SIPHON_DEV_PLAINTEXT_KEY=1
+    restart: unless-stopped
+
+  # 2. Rust FHE Engine (The Calculator)
+  fhe-engine:
+    build: ./fhe
+    container_name: syphon-fhe-engine
+    ports:
+      - "${FHE_ENGINE_PORT:-5001}:5001"
+    environment:
+      - RUST_LOG=info
+      - RUST_BACKTRACE=full
+    restart: unless-stopped
+
+  # 4. Ponder on-chain indexer (Merkle leaves + vault deposits)
+  siphon-indexer:
+    build: ../siphon-indexer
+    container_name: siphon-indexer
+    ports:
+      - "42069:42069"
+    environment:
+      - DATABASE_URL=postgresql://siphon:siphon_secure_pass@postgres:5432/siphon_indexer
+      - DATABASE_SCHEMA=${DATABASE_SCHEMA:-siphon_indexer_local}
+      - PONDER_RPC_URL_8453=${PONDER_RPC_URL_8453:-https://mainnet.base.org}
+      - PONDER_RPC_URL_11155111=${PONDER_RPC_URL_11155111:-https://ethereum-sepolia-rpc.publicnode.com}
+      # This deployment serves vault leaves/deposits only. Optional mixer/bridge graph indexing
+      # requires an Ethereum-mainnet RPC and is deployed separately when needed.
+      - INDEX_BASE_MIXERS=0
+      - INDEX_BASE_BRIDGES=0
+      - INDEX_ETH_TORNADO=0
+      - INDEX_THIRD_PARTY_BRIDGES=0
+      - INDEX_HOP_BRIDGES=0
+      - BASE_DEPLOY_BLOCK=${BASE_DEPLOY_BLOCK:-50240388}
+      - SEPOLIA_DEPLOY_BLOCK=${SEPOLIA_DEPLOY_BLOCK:-11130700}
+      - MERKLE_TREE_BASE_ETH=${MERKLE_TREE_BASE_ETH:-0x30F593D0b32034801Bd597292D82e8c3663129a9}
+      - MERKLE_TREE_BASE_USDC=${MERKLE_TREE_BASE_USDC:-0x921b4280462Af6DDC3982BdA2786801bAE76D8B8}
+      - MERKLE_TREE_SEPOLIA_ETH=${MERKLE_TREE_SEPOLIA_ETH:-}
+      - MERKLE_TREE_SEPOLIA_USDC=${MERKLE_TREE_SEPOLIA_USDC:-}
+      - VAULT_BASE_ETH=${VAULT_BASE_ETH:-0xBf30FcEa7a35C7f20fcfd7db5673F26F7a396036}
+      - VAULT_BASE_USDC=${VAULT_BASE_USDC:-0xd7030f84D6A49465a2C5c60e3581848bAF38686F}
+      - VAULT_SEPOLIA_ETH=${VAULT_SEPOLIA_ETH:-}
+      - VAULT_SEPOLIA_USDC=${VAULT_SEPOLIA_USDC:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Encryption happens in the browser (siphon-app/fhe-wasm): the client generates FHE keys,
+  # encrypts bounds locally, and uploads only the server key + ciphertext. There is no
+  # server-side payload generator.
+
+  # 3. Proving Relayer (ZK proof generation)
+  proving-relayer:
+    build: ./proving-relayer
+    container_name: siphon-proving-relayer
+    ports:
+      - "5010:5010"
+    environment:
+      - ZK_BUILD_DIR=/app/zk
+      - RAPIDSNARK_BIN=/usr/local/bin/rapidsnark
+      - NODE_BIN=node
+      - API_TOKEN=${API_TOKEN:-testtoken123}
+      # Resource control. Proof generation is CPU-bound, so unbounded concurrency turns overload
+      # into thrash rather than a clean rejection. Defaults are computed from cpu_count at boot;
+      # set these explicitly on a shared or small host.
+      - PROVE_CONCURRENCY=${PROVE_CONCURRENCY:-}
+      - PROVE_QUEUE_WAIT_S=${PROVE_QUEUE_WAIT_S:-3}
+      - PROVE_RATE_PER_MIN=${PROVE_RATE_PER_MIN:-20}
+    volumes:
+      - ../siphon-app/public/zk:/app/zk:ro
+    restart: unless-stopped
+
+volumes:
+  trade-executor-data:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local
+  postgres_data:
+    driver: local

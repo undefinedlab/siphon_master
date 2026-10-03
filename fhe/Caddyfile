@@ -1,0 +1,145 @@
+54-221-134-175.sslip.io, api.siphon.money, fhe.siphon.money {
+    # Browser CORS: only the two staging frontends may call this API origin from a page.
+    # The apps fetch this host directly (NEXT_PUBLIC_TRADE_EXECUTOR_URL), which is
+    # cross-origin from their hostnames; without these headers every wallet-authenticated
+    # browser call (including /relayWithdrawLegacy) is blocked by the browser. Non-browser
+    # callers (curl/SDK) are unaffected. Update the origin list at production cutover.
+    @legacy_origin header Origin https://legacy-54-221-134-175.sslip.io
+    # Local dev frontends. The team runs their own app builds against this staging API; without an
+    # Allow-Origin match the browser blocks every wallet-authenticated call. Echoing the Origin back
+    # is safe here because the matcher only admits localhost/127.0.0.1 — a page on any other host
+    # can never present those (browsers set Origin, scripts cannot forge it). Staging only.
+    @local_origin header_regexp Origin ^https?://(localhost|127\.0\.0\.1)(:[0-9]{1,5})?$
+    # Production frontend on Vercel. It calls this host directly for the executor, ASP and
+    # decryptor lanes, so without an Allow-Origin match the browser blocks hasClientKey — and
+    # the app then retries key derivation, which re-opens the wallet signature prompt in a loop.
+    # Anchored to the two exact hostnames; echoing Origin back cannot admit anything else.
+    @prod_origin header_regexp Origin ^https://(www\.)?siphon\.money$
+    header @legacy_origin {
+        Access-Control-Allow-Origin "https://legacy-54-221-134-175.sslip.io"
+        Vary Origin
+        defer
+    }
+    header @prod_origin {
+        Access-Control-Allow-Origin "{http.request.header.Origin}"
+        Vary Origin
+        defer
+    }
+    header @local_origin {
+        Access-Control-Allow-Origin "{http.request.header.Origin}"
+        Vary Origin
+        defer
+    }
+    # Preflights answer 204 here; foreign origins get no Allow-Origin header above,
+    # so the browser still refuses them.
+    @preflight method OPTIONS
+    handle @preflight {
+        header Access-Control-Allow-Methods "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+        header Access-Control-Allow-Headers "{http.request.header.Access-Control-Request-Headers}"
+        header Access-Control-Max-Age "600"
+        respond "" 204
+    }
+
+    # Upstream failures unwind through Caddy's own error path, which never reaches the deferred
+    # `header` handlers above. A restarting container therefore reaches the browser as
+    # "No 'Access-Control-Allow-Origin' header is present" — the fetch is blocked before JS can
+    # read the status, so an outage is misreported as a CORS misconfiguration and sends everyone
+    # hunting the wrong bug. Re-apply the same origin gate here; the 502 then reads as a 502.
+    handle_errors {
+        header @legacy_origin Access-Control-Allow-Origin "https://legacy-54-221-134-175.sslip.io"
+        header @prod_origin Access-Control-Allow-Origin "{http.request.header.Origin}"
+        header @local_origin Access-Control-Allow-Origin "{http.request.header.Origin}"
+        header Vary Origin
+        respond "{err.status_text}" {err.status_code}
+    }
+
+    # Immutable soft-era proving lane. handle_path strips /legacy-prove before proxying,
+    # so the legacy UI's /legacy-prove/prove request reaches the relayer as /prove.
+    handle_path /legacy-prove/* {
+        reverse_proxy proving-relayer-legacy:5010
+    }
+
+    # Current Hard ASP API for local/current frontends. handle_path removes /asp so
+    # /asp/ready and /asp/screen reach the service as /ready and /screen.
+    handle_path /asp/* {
+        reverse_proxy siphon-asp:5055
+    }
+
+    # siphon-aspv2 (v2/v3 compliance API) for the v3 frontend. handle_path strips /aspv2 so
+    # /aspv2/set/root reaches the service as /set/root.
+    #
+    # The screen token is injected HERE, server-side, rather than shipped to the browser:
+    # aspClientV3 sends X-API-TOKEN, which aspv2 does not accept (it takes Authorization or
+    # X-Asp-Token), and UserDash passes an empty token anyway. Injecting at the edge fixes both
+    # and keeps the bearer token out of client-side JS.
+    # Read from the environment, not inlined: this file is in git and the token is not.
+    # Caddy resolves {env.*} at config load, so the value must be in the caddy service's
+    # environment (docker-compose.prod.yml) — an unset var silently becomes an empty Bearer
+    # and every /aspv2/* call 401s.
+    handle_path /aspv2/* {
+        reverse_proxy siphon-aspv2-asp-1:5056 {
+            header_up Authorization "Bearer {env.ASPV2_SCREEN_TOKEN}"
+        }
+    }
+
+    # siphon-aspv5 (PROGRAM_VERSION 5 compliance split) — the Base v5 lane. Amplify sets
+    # ASP_URL=https://api.siphon.money/aspv5, and the app's /api/asp-set/* proxies attach their own
+    # `Authorization: Bearer $ASP_SCREEN_TOKEN` server-side (aspServerUrl.ts only withholds it for a
+    # /api/asp-* URL), so this route must NOT rewrite the header the way /aspv2 does — injecting an
+    # unset {env.*} here would replace a good token with an empty Bearer.
+    #
+    # Without this route every /aspv5/* request falls through to the catch-all trade-executor and
+    # comes back as a Flask 404, which surfaces in the app as `/api/asp-set/root 404` — deposits and
+    # withdrawals both stall with no error naming the ASP.
+    handle_path /aspv5/* {
+        reverse_proxy siphon-aspv5-asp-1:5056
+    }
+
+    # siphon-solasp — ASP for the Solana ZK vault (siphon-vault-zk, chain 900002). Same contract as
+    # /aspv5: the app proxies /api/asp-set/* server-side with its own Bearer token, so no header is
+    # injected here. Also serves /solasp/solana/state/leaves (indexed state tree for Merkle paths).
+    handle_path /solasp/* {
+        reverse_proxy siphon-solasp-asp-1:5056
+    }
+
+    # Current Hard ASP proving lane.
+    # siphon-indexer-v2 (v3 state leaves). handle_path strips /idx so /idx/state/leaves
+    # reaches the indexer as /state/leaves. The v3 arming path needs the FULL leaf set:
+    # its chain-scan fallback only sees deposits and fails closed after the first split.
+    handle_path /idx/* {
+        # Base v3 leaves come from siphon-indexer-v3base (INDEXER_SCOPE=base); Sepolia stays on
+        # siphon-indexer-v2 (INDEXER_SCOPE=sepolia). INDEXER_SCOPE=all cannot serve both: the
+        # handlers register Anvil sources whenever scope is "all" while ponder.config soft-skips
+        # anvil, so the build dies on Invalid source name 'ComplianceHubAnvil'.
+        @base query chainId=8453
+        reverse_proxy @base siphon-indexer-v3base:42069
+        reverse_proxy siphon-indexer-v2:42069
+    }
+
+    handle /prove* {
+        reverse_proxy proving-relayer:5010
+    }
+
+    # API gateway (self-serve /v1/keys packs + purchase + verify for createStrategy).
+    handle /v1/* {
+        reverse_proxy api-gateway:8000
+    }
+
+    # Everything else → Trade Executor (createStrategy, strategies, uploadServerKey,
+    # hasServerKey, strategy/<id>/result, executeStrategy, health, notes, ...).
+    handle {
+        reverse_proxy trade-executor:5005
+    }
+}
+
+# The current app is no longer exposed at the edge; it is tested over localhost
+# (SSH tunnel to siphon-app-current:3000). The legacy frontend stays published so the
+# exit-only surface remains reachable for old-generation withdrawals.
+
+legacy-54-221-134-175.sslip.io {
+    # The legacy build predates the app-side CSP; supply an equivalent report-only
+    # policy at the edge so the exit-only surface has parity with the current app
+    # without rebuilding the frozen legacy release.
+    header Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' blob: https://54-221-134-175.sslip.io https://*.sslip.io https://*.supabase.co wss://*.supabase.co https://mainnet.base.org https://sepolia.base.org https://ethereum-sepolia-rpc.publicnode.com https://cloudflare-eth.com https://*.publicnode.com https://*.g.alchemy.com https://*.alchemy.com https://*.infura.io https://*.drpc.org https://*.metamask.io https://metamask-sdk.api.cx.metamask.io wss://*.metamask.io https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com wss://*.reown.com https://api.web3modal.org https://pulse.walletconnect.org https://explorer-api.walletconnect.com https://rpc.walletconnect.com; frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org https://verify.walletconnect.com https://verify.walletconnect.org https://*.metamask.io https://*.reown.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    reverse_proxy siphon-app-legacy:3000
+}

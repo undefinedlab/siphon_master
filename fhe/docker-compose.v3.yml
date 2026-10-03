@@ -1,0 +1,4 @@
+services:
+  siphon-indexer-sepolia:
+    environment:
+      - DATABASE_SCHEMA=feepool2_sepolia_v3_20260818
