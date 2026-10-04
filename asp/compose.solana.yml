@@ -1,0 +1,72 @@
+# siphon-solasp — ASP for the Solana ZK vault (siphon-vault-zk), same image as aspv2/aspv5.
+#
+#   docker compose -f compose.solana.yml --env-file .env.solana up -d --build
+#
+# Roles:
+#   asp         — HTTP API (/screen, /set/*, /solana/state/leaves); loopback + siphon-network so
+#                 Caddy reaches it by name at /solasp/*
+#   watcher-sol — indexes DepositEvent/LeafInserted from the vault PDA, admits screened deposits
+#   postman-sol — publishes (admitted, revoked) roots via publish_roots, signed by the postman
+#                 key named on chain with set_postman. Exactly one replica: it is the only writer.
+#
+# The association set is per instance (one DB = one chain), which is why this is its own
+# project with its own Postgres rather than a third pair inside siphon-aspv5.
+
+name: siphon-solasp
+
+x-app: &app
+  build: .
+  image: siphon-solasp:local
+  env_file: [.env.solana]
+  restart: unless-stopped
+  depends_on:
+    postgres: {condition: service_healthy}
+    redis: {condition: service_healthy}
+
+services:
+  asp:
+    <<: *app
+    ports: ["127.0.0.1:${ASP_HOST_PORT:-5058}:5056"]
+    networks: [default, siphon-network]
+
+  watcher-sol:
+    <<: *app
+    command: ["python", "scripts/watch_deposits_solana.py", "--chain-id", "${ASP_CHAIN_ID}", "--loop"]
+    healthcheck: {disable: true}
+
+  postman-sol:
+    <<: *app
+    command: ["python", "postman_solana.py", "loop"]
+    healthcheck: {disable: true}
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes: ["solasp-pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  solasp-pgdata:
+
+networks:
+  default:
+  siphon-network:
+    external: true

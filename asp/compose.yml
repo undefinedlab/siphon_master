@@ -1,0 +1,101 @@
+# siphon-aspv2 production stack.
+#
+#   docker compose --env-file .env.production up -d --build
+#
+# Three roles share one image and one env file:
+#   asp      — the HTTP API (screen / set/*)
+#   postman  — publishes admitted+revoked roots on the bus epoch
+#   watcher  — scans VaultKernel.Deposited and admits from the pending outbox
+#
+# Only `asp` is exposed, and only on loopback: put TLS + auth in front of it (Caddy on the box
+# already terminates for the other services). postman and watcher take no inbound traffic.
+#
+# ASP_POSTMAN_KEY lives in .env.production (chmod 600, gitignored) and NOT in this file.
+
+name: siphon-aspv2
+
+x-app: &app
+  build: .
+  image: siphon-aspv2:local
+  env_file: [.env.production]
+  restart: unless-stopped
+  depends_on:
+    postgres: {condition: service_healthy}
+    redis: {condition: service_healthy}
+
+services:
+  asp:
+    <<: *app
+    ports: ["127.0.0.1:${ASP_HOST_PORT:-5056}:5056"]
+    # Caddy (siphon-caddy) lives on the external siphon-network and proxies /aspv2/* to this
+    # container BY NAME. That attachment used to be a manual `docker network connect`, which any
+    # `compose up --force-recreate` silently dropped — Caddy then 502d every ASP route while the
+    # container itself stayed healthy. Declaring it here makes the attachment survive recreates.
+    networks: [default, siphon-network]
+
+  postman:
+    <<: *app
+    # The publish loop is the only writer of on-chain roots. Exactly one replica, always —
+    # two would double-spend the nonce and burn the postman's gas on reverts.
+    command: ["python", "postman.py", "loop", "--chain-id", "${ASP_CHAIN_ID}"]
+    healthcheck: {disable: true}
+
+  watcher:
+    <<: *app
+    command: ["python", "scripts/watch_deposits.py", "--chain-id", "${ASP_CHAIN_ID}", "--loop"]
+    healthcheck: {disable: true}
+
+  # ---- second chain -------------------------------------------------------------------------
+  # The `asp` API is multi-chain (ASP_COMPLIANCE_HUBS, ASP_RPC_URLS), but postman and watcher each
+  # take a single --chain-id, so a second chain needs its own pair. They share the image and env
+  # file; the chain-specific values are resolved per chain inside the app —
+  # config.postman_key(chain_id) reads ASP_POSTMAN_KEY_<id>, so Base signs with the Base postman
+  # and Sepolia with Sepolia's. One key for both would fail chain_verify's assertion that the
+  # key's address equals the on-chain postman.
+  #
+  # Enable with `--profile base`. Left behind a profile so the default `compose up` on a
+  # Sepolia-only box does not start a pair that would crash-loop on missing Base config.
+  postman-base:
+    <<: *app
+    profiles: ["base"]
+    command: ["python", "postman.py", "loop", "--chain-id", "8453"]
+    healthcheck: {disable: true}
+
+  watcher-base:
+    <<: *app
+    profiles: ["base"]
+    command: ["python", "scripts/watch_deposits.py", "--chain-id", "8453", "--loop"]
+    healthcheck: {disable: true}
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes: ["aspv2-pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Rate-limit counters only — nothing here needs to survive a restart.
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  aspv2-pgdata:
+
+networks:
+  default:
+  siphon-network:
+    external: true

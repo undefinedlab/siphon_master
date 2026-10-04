@@ -1,0 +1,17 @@
+# Secrets and local state never belong in the image: env files carry postman keys and the
+# Fernet salt key; instance/ holds local SQLite association sets.
+.env
+.env.*
+!.env.example
+!.env.production.example
+!.env.solana.example
+instance/
+*.db
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+# The Dockerfile installs node deps in its own stage; a host node_modules would shadow it.
+node_modules/
+.git/

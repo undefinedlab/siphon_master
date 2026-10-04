@@ -1,0 +1,8 @@
+{
+  "name": "siphon-aspv2",
+  "private": true,
+  "description": "PoseidonT3 bridge for zkv2 fixture parity (circomlibjs)",
+  "dependencies": {
+    "circomlibjs": "^0.1.7"
+  }
+}
