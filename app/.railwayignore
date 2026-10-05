@@ -1,0 +1,10 @@
+﻿node_modules
+.next
+.next-dev
+public/zk
+fhe-wasm/target
+package-lock.json
+**/*.zkey
+**/*.wasm
+.git
+

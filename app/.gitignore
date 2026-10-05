@@ -1,0 +1,85 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+.next-dev/
+out/
+
+# Production build
+build/
+dist/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+!.env.world-id.example
+
+# World ID nullifier prototype store
+.data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.turbo/
+.eslintcache
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Debug
+*.pem
+
+# Vercel
+.vercel
+
+# Misc
+*.local
+
+# Rust / WASM (fhe-wasm)
+fhe-wasm/target/
+fhe-wasm/pkg-node/
+fhe-wasm/Cargo.lock
+# Note: the built bundler pkg (fhe-wasm/pkg) is intentionally committed so the app builds
+# without a Rust/wasm toolchain.
+package-lock.json
+
+# v4 proving keys (public/zk/{merge2..6,withdraw1..6}/zkey_final.zkey).
+# Four of these exceed GitHub's hard 100MB limit (merge5/6 and withdraw5/6 are 131-151MB), so the
+# whole push is rejected with GH001. The wasm and verification_key.json for each circuit ARE
+# tracked — only the proving keys are excluded, and they are installed out of band the way the
+# release box already does it (install-r2-zk.sh / zk-ceremony-incoming).
+# Serving these from Vercel needs Git LFS or an external artifact host — an open decision.
+public/zk/merge*/zkey_final.zkey
+public/zk/withdraw*/zkey_final.zkey
+# public/zk/ceremony/* is the SECOND key set — same circuits, production-ceremony delta — served to
+# chains whose deployed verifiers came from the ceremony (Base). Same size problem, same out-of-band
+# install. Its verification_key.json files ARE tracked: they are small, and they are the only thing
+# that makes the two key sets distinguishable at review time.
+public/zk/ceremony/*/zkey_final.zkey
+# The compliance half (PROGRAM_VERSION 5). Same reasoning, same out-of-band install: these six add
+# 322MB and compliance6 alone is 88MB. Their wasm and verification_key.json ARE tracked.
+public/zk/compliance*/zkey_final.zkey

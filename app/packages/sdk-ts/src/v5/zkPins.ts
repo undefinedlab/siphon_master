@@ -1,0 +1,77 @@
+/**
+ * SHA-256 of every proving artifact the SDK loads, fixed at release time. Sources, none of them the
+ * artifact host: `.wasm` = siphon-app git (public/zk); ceremony zkeys = siphon-zk-v2
+ * ceremony/final-v5-split.SHA256SUMS; ceremony vkeys = ceremony/release-v5-split.SHA256SUMS. The
+ * Sepolia dev-beacon keys (admin-only chain) were hashed from the bucket when pinned. All 36
+ * independently-sourced pins were cross-checked against the bucket on 2026-09-29.
+ *
+ * Why: the wasm computes the witness, so it sees every private input — a swapped wasm could exfiltrate
+ * note secrets while still producing a proof that passes a verify against a vkey from the same host.
+ */
+export const ZK_PINS: Readonly<Record<string, string>> = {
+  "ceremony/compliance1/verification_key.json": "cb1a68105258247f4ddbe3378758b9e60d5b2536d1203a5aa38e9be45fc3bf56",
+  "ceremony/compliance1/zkey_final.zkey": "39532f0c796fd732caba12c60dd00a24b42379656cf76f6fa9bc5e96259e94fc",
+  "ceremony/compliance2/verification_key.json": "78dcae3c9b57c04e5e371fc74834f2a91d0de6291ad4d8f69309e2b9ed703549",
+  "ceremony/compliance2/zkey_final.zkey": "6b1fd6b94b0c2764330688e0298e785232a0ed543cefedd4f87db58d3a5d6b36",
+  "ceremony/compliance3/verification_key.json": "1c58c48c5a50f5a750e7be46e425a042faa1a8062b1045483eac24c4a2f743ea",
+  "ceremony/compliance3/zkey_final.zkey": "41d94bfabce15d72210b0a3971b6c910d9aa7dee2d17af2bfb57468049af0614",
+  "ceremony/compliance4/verification_key.json": "96de1533ea4a7eed5a884cf5e50f9dd204916f5a69afff66ddf25938b9631d00",
+  "ceremony/compliance4/zkey_final.zkey": "d39ab80db87655205834d4a039bab993a8b5549d1dd08a8d16ee3c1f05d7d8a4",
+  "ceremony/compliance5/verification_key.json": "458827d7538209f6459484816faa912d1e02930ab50da98ea83601c6fdebe4ea",
+  "ceremony/compliance5/zkey_final.zkey": "6656a2b7e7f36b480318e783060212d29916110215d8afa3021b9e162fe89d2a",
+  "ceremony/compliance6/verification_key.json": "3f28f46b8229932660468e3633c9275c203c324bc3678f72d51459305ddfb12f",
+  "ceremony/compliance6/zkey_final.zkey": "448e54aad29b366994a2d827be84b84152d956aa845f3f7fafd04604d43f6714",
+  "ceremony/withdraw1/verification_key.json": "8ba1c729cd02d3dab6887c9844fc45cac1ae68c22353caf4d2ef9a61b394c84b",
+  "ceremony/withdraw1/zkey_final.zkey": "0ff1d6b91dda43120029aa309021ac23e3d6617f9ed0897a3475ec311b2b45c8",
+  "ceremony/withdraw2/verification_key.json": "6481443e88342649cc5ff95e4bbe3d7a84d363bd9ca8afb98adfc22053078241",
+  "ceremony/withdraw2/zkey_final.zkey": "5b4736e4b9036c1d5a084c9bfcb6082e6ccc00eeb15e5b1d8fb3f798a9685fbd",
+  "ceremony/withdraw3/verification_key.json": "a587cb54f14b4f4709a6311fd4051d7032eddf95d9a27c76107a2b9ffc20b3aa",
+  "ceremony/withdraw3/zkey_final.zkey": "c9e19d967427cf9ab8a4ac99c985596595ceb09dc13427fa4f1b2441b5616bd7",
+  "ceremony/withdraw4/verification_key.json": "3c19983749444803c56b9b3996d72811d0d3a7b00ca740cdc09c5b9febca5a18",
+  "ceremony/withdraw4/zkey_final.zkey": "41689cd8852c4e09bbbc74aff47866867a6cb1e09c97705b77cebf3b01923550",
+  "ceremony/withdraw5/verification_key.json": "08654ae9c91433d8d8e7b5770f73b6a0170562abfdd86d838c7c78dba9eef380",
+  "ceremony/withdraw5/zkey_final.zkey": "a06a6b931c1005e9585d58f9b4fc617e0f049a473149d8f93c0b45e0fac8c270",
+  "ceremony/withdraw6/verification_key.json": "4572be6b9d231c3d57cca8fefeceb411e2a6b0952ec668e807a4cc0807cd5ad2",
+  "ceremony/withdraw6/zkey_final.zkey": "db3ab0491726fc8e195962acf360710cb7afea3acad29e323f5d340a899f62d0",
+  "compliance1/main_compliance1.wasm": "c0e2a403e89f8e8b09fe5b1da97c1cb16c9f7e4cfad478e78298a698f25a97f7",
+  "compliance1/verification_key.json": "f4854f7c474e6585cf45687f34ce65587f984347b6422242101c42b09e49f936",
+  "compliance1/zkey_final.zkey": "06cd516e65ada59f42e8cdf6a60d16cdbe5a0bc666fa22f751965c0ba1265697",
+  "compliance2/main_compliance2.wasm": "ed7574219281acbc4a1301fe49b09879fb26aaa7b1a5850ee02aea74a45f88b0",
+  "compliance2/verification_key.json": "ee7bdb720e839359c0a8c6cc712e55226b33777c23bd5f1e833aeea19cbac08f",
+  "compliance2/zkey_final.zkey": "2e1bdb9b6a1d9a37cd13c9a7f1ab1d6214510fcd31a051dd04f4cb964706c83c",
+  "compliance3/main_compliance3.wasm": "28e64574b3dd8d52dc7093f41692fcadd7f2f8ea139345c6a5a2ab8047a5379e",
+  "compliance3/verification_key.json": "77d82751eb4ef5f587d9daa8644c9a2ad62edfd0528420a00fe44a92b81c90a1",
+  "compliance3/zkey_final.zkey": "30304735610f9e8bfd031f95bbf98973c51368072de136d2500e79eede520df8",
+  "compliance4/main_compliance4.wasm": "905981dcb9c840442be66872e076b6c72e140d4b8681b9cec6eb61d445f1c1e7",
+  "compliance4/verification_key.json": "be0af3b5326cfdc5f3d55f96f28d1b50c7ea02d2d32c5127ed0aa85aca5692c0",
+  "compliance4/zkey_final.zkey": "7b9a612bffa6e967d713a098cdd363b5d3d303421ceb1f10ee38b204f5be0ab0",
+  "compliance5/main_compliance5.wasm": "50b420a8bc96b8b74fc82eb47d9befd13ee196ed9ea92eeae045c249c02521a3",
+  "compliance5/verification_key.json": "05562936055f94bc3095dcb7f4d02dff3a28b7d6f5d484d0b46148d67ddd48bb",
+  "compliance5/zkey_final.zkey": "756ca80ce43341626e836229a4f42a1fa31ce984cb8f30f526e21a162b4fd80c",
+  "compliance6/main_compliance6.wasm": "1f1ff00bbb8134bb4dd8012cfe1d022c14e580ce3e16bceed6deebfb6a60a877",
+  "compliance6/verification_key.json": "c647588ed489106469b8e89d51b8e15b018ba4ab5024d66498910a3df62d4e22",
+  "compliance6/zkey_final.zkey": "157e6a7960f72d6838da08cd39e4a0e495b6f81e912a5cd6661c882461134df8",
+  // split (Solana Devnet multi-leg orders): siphon-app git public/zk/split, matched to the served
+  // copies on 2026-10-10.
+  "split/main_split.wasm": "369da9203f44957a567671ef9e71cb0a9eefd6b4ee0d96cb25e00df3f923a574",
+  "split/verification_key.json": "16906bffe42fbd1ec213f6b3bed16302b0f975e61965258cb8d60f0c2df28bad",
+  "split/zkey_final.zkey": "5125752ced763748cadb3b564511a16cecdd00cd65edd33442005197b56c94d0",
+  "withdraw1/main_withdraw1.wasm": "8c85c27a1bb3bf39659a37e6f6f546e3e30ad45eed783dfacaaf01913631249b",
+  "withdraw1/verification_key.json": "3ec5b96009305755cd12c1fbd4b30c3328542eb8bb6024a6005927d57b9fbfac",
+  "withdraw1/zkey_final.zkey": "d8191ae826caeee6f89c259e7f20dacf7b38bf10a6bef482790c5a75a407afdb",
+  "withdraw2/main_withdraw2.wasm": "189030922416e3379c6d0c11593366385862a7c47659f833a83992336993aa8d",
+  "withdraw2/verification_key.json": "b9929e7e93a9135ac7c9e6748df796641a7857a94d43bc3cfcf4f9f48b571a30",
+  "withdraw2/zkey_final.zkey": "5cc4c19b7fbb22322f18f41c647dc0e0acfe6fb8bd899f2945d13703bc2ddc96",
+  "withdraw3/main_withdraw3.wasm": "f0880e3b32566addc5ad309814f729b1d1d641f08909bbc27729dfa271086379",
+  "withdraw3/verification_key.json": "ff49bf097a159826df6576ca9a39e5ee71414e7f82b9b3596d346f98f2faa32a",
+  "withdraw3/zkey_final.zkey": "c53fbab1fd84f6c4778e9201251287ec0cc7753ee677ffd2a6e788e079a4523f",
+  "withdraw4/main_withdraw4.wasm": "cdf429672f6337809fccfd3120ce426931f06c828d050f084ae614baa57bcaa8",
+  "withdraw4/verification_key.json": "c921d42f0d06c2294c2c7d732325ad9584cdbb44be02a21106c704811a18a098",
+  "withdraw4/zkey_final.zkey": "751fdb48b6722023b998cc2ecba3bfe850f24963ab2fc10d248647ce0f62ce74",
+  "withdraw5/main_withdraw5.wasm": "3f54ca2a2bcc11c4aa322b6465dba0cfd79eba1c821be125ed1cd5ab2a743968",
+  "withdraw5/verification_key.json": "c45b391b0446cb39b4101fb11b867ab3d8e3c35f43f64a7fe93051cb118b194e",
+  "withdraw5/zkey_final.zkey": "982c6a3a086852a1f8dcb84a08f9d583f1e8745988a2a5013d2a5f43f934211b",
+  "withdraw6/main_withdraw6.wasm": "5537cbd36369ef6132ccc0527385d62dc0ce0b424f3f1a5f0a6b1a0e10ea8d89",
+  "withdraw6/verification_key.json": "235971bf07be34f7d4bf9d5765a2f08eebe16cc71297282ef49831430ba1474f",
+  "withdraw6/zkey_final.zkey": "77abb8cceac82f75cc49ee2fa52673ac0000cd1e764aafc64402736f4c283068",
+};

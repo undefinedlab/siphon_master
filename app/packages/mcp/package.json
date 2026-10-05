@@ -1,0 +1,50 @@
+{
+  "name": "siphon-mcp",
+  "version": "0.1.0",
+  "description": "Siphon MCP server: private deposits, payouts, swaps and encrypted limit orders on Solana Devnet, for Claude Code, Codex and any MCP client.",
+  "type": "module",
+  "bin": {
+    "siphon-mcp": "dist/mcp/index.js"
+  },
+  "files": [
+    "dist",
+    "vendor",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --target=node --outfile=dist/mcp/index.js --external @modelcontextprotocol/sdk --external zod --external @solana/web3.js --external snarkjs --external circomlibjs --external ethers --external libsodium-wrappers && rm -rf vendor && cp -R ../sdk-ts/vendor vendor",
+    "start": "node dist/mcp/index.js",
+    "prepublishOnly": "bun run build",
+    "test": "node test/smoke.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@solana/web3.js": "^1.98.4",
+    "circomlibjs": "^0.1.7",
+    "ethers": "^6.13.0",
+    "libsodium-wrappers": "^0.8.4",
+    "snarkjs": "^0.7.6",
+    "zod": "^3.25.76"
+  },
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SiphonMoney/siphon-app.git",
+    "directory": "packages/mcp"
+  },
+  "homepage": "https://docs.siphon.money/docs/api/mcp",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "siphon",
+    "solana",
+    "privacy",
+    "zk",
+    "fhe",
+    "claude-code",
+    "codex"
+  ]
+}

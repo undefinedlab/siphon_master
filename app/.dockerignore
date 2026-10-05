@@ -1,0 +1,12 @@
+# Never bake developer secrets or local overrides into the Railway image.
+.env
+.env.*
+!.env.example
+
+node_modules
+.next
+.git
+.DS_Store
+*.md
+coverage
+.turbo

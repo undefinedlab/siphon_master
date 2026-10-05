@@ -1,0 +1,102 @@
+name: CI
+
+# Path-scoped so doc-only / backend-only changes don't spin up the Next build.
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "bun.lock"
+      - "next.config.ts"
+      - "tsconfig.json"
+      - "scripts/**"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "bun.lock"
+      - "next.config.ts"
+      - "tsconfig.json"
+      - "scripts/**"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # public/zk holds ~389MB of committed zkey/wasm artifacts. `next build`
+          # copies public/ verbatim but doesn't need those files to COMPILE, so
+          # exclude them from the checkout to keep the job fast. Ceremony gate runs
+          # in a separate job with a full checkout (OVERLORD F-5).
+          # Patterns are gitignore-style. `/.bun-version` is listed explicitly because the pin
+          # below reads it: if the sparse filter ever dropped it, setup-bun would silently fall
+          # back to `latest`, which is the exact failure that pin exists to prevent.
+          sparse-checkout: |
+            /*
+            !/public/zk
+            /.bun-version
+          sparse-checkout-cone-mode: false
+
+      # PINNED via .bun-version. Unpinned, this installs whatever bun is current, and the
+      # package manager decides dependency LAYOUT: bun 1.4.0 does not create
+      # porto/node_modules/zod@4.4.3, so porto's `zod/mini` import (zod v4 only; the hoisted zod
+      # is 3.25.76) fails to resolve and webpack dies. --frozen-lockfile pins what is RESOLVED,
+      # never who resolves it, so an unpinned installer defeats it entirely. This is what turned
+      # CI red on 2026-09-01 with no change in this repo. amplify.yml reads the same file.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Security self-checks
+        run: bun run security:check
+
+      - name: Overlord regression tests
+        run: bun run test:overlord
+
+      - name: Lint security-critical paths
+        run: bun run lint:security
+
+      # Full-repo lint still has a large backlog — report without blocking merge.
+      - name: Lint (advisory)
+        run: bun run lint
+        continue-on-error: true
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Build
+        run: bun run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://ci.invalid
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key
+
+  ceremony:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # PINNED via .bun-version. Unpinned, this installs whatever bun is current, and the
+      # package manager decides dependency LAYOUT: bun 1.4.0 does not create
+      # porto/node_modules/zod@4.4.3, so porto's `zod/mini` import (zod v4 only; the hoisted zod
+      # is 3.25.76) fails to resolve and webpack dies. --frozen-lockfile pins what is RESOLVED,
+      # never who resolves it, so an unpinned installer defeats it entirely. This is what turned
+      # CI red on 2026-09-01 with no change in this repo. amplify.yml reads the same file.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: ZK ceremony release gate
+        run: bun run ceremony:check

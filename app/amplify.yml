@@ -1,0 +1,193 @@
+# AWS Amplify build spec — siphon-app (Next.js 15, bun)
+#
+# Two things about this repo drive everything below:
+#
+#   1. public/zk holds ~732 MB of ZK proving artifacts (zkey/wasm) that the BROWSER
+#      fetches at runtime (`/zk/<circuit>/zkey_final.zkey` — see src/lib/generateProof.js).
+#      They are static assets, not build inputs. They must be SERVED but need not be
+#      COMPILED against. See the note on artifact size below — this is the single most
+#      likely reason an Amplify build fails or times out.
+#
+#   2. next.config.ts sets `output: "standalone"`. Amplify's Next.js SSR runtime
+#      expects the standalone layout, so do not change that without re-testing here.
+#
+# The repo has no `engines` / `packageManager` pin, so the Amplify image's default
+# Node is whatever the build image ships. Pin it explicitly in the console
+# (Build settings → Build image → Node version) so a base-image bump cannot silently
+# change the runtime under you.
+
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Amplify images ship npm/yarn, not bun. Install it and put it on PATH.
+        # PINNED. Unpinned, this fetches whatever bun is current, and the package manager
+        # then decides dependency layout: bun 1.4.0 installed 1266 packages and did NOT
+        # create porto/node_modules/zod@4.4.3, so porto's `zod/mini` import (zod v4 only;
+        # the hoisted zod is 3.25.76) failed to resolve and webpack died. bun 1.3.14 on the
+        # identical bun.lock installs 1258 packages and nests it correctly. Nothing in this
+        # repo changed — builds 40/42/43/44 broke because a new bun shipped, and CI went red
+        # the same day for the same reason. The version lives in .bun-version so this and
+        # .github/workflows/ci.yml cannot drift apart; bump it there, deliberately, after
+        # checking the tree still resolves.
+        - curl -fsSL https://bun.sh/install | bash -s "bun-v$(cat .bun-version)"
+        - export BUN_INSTALL="$HOME/.bun"
+        - export PATH="$BUN_INSTALL/bin:$PATH"
+        - bun --version
+        # Delete any node_modules the cache restored before installing. Amplify extracts its
+        # cache BEFORE this phase, and bun then installs only what the restored tree lacks at
+        # the top level — builds 42 and 43 both logged "1 package installed" and inherited the
+        # rest from an archive predating @wagmi/connectors 6.2.0. That tree has no
+        # porto/node_modules/zod@4.4.3, so `zod/mini` (zod v4 only; the hoisted zod is 3.25.76)
+        # did not resolve and webpack failed — while bun.lock correctly pinned it the whole
+        # time. Dropping node_modules from `cache.paths` is not enough on its own: that stops
+        # the stale tree being SAVED, but an already-stored archive is still RESTORED.
+        - rm -rf node_modules
+        # --frozen-lockfile: fail rather than silently resolving a different tree
+        # than the one CI and local dev tested against.
+        - bun install --frozen-lockfile
+        # Keep public/zk out of the build output when it is served from a CDN instead.
+        # Next copies public/ into the standalone output, where it counts against the
+        # 220 MiB build-output cap; ~2.73 GB of zkeys would fail the build outright.
+        # Guarded on the variable so this is impossible to get half-done: the app only
+        # fetches artifacts off-origin when NEXT_PUBLIC_ZK_BASE_URL is set (zkAssets.ts),
+        # and that is exactly when the directory must not ship. Unset, nothing is removed
+        # and the build behaves as before.
+        - |
+          if [ -n "$NEXT_PUBLIC_ZK_BASE_URL" ]; then
+            echo "NEXT_PUBLIC_ZK_BASE_URL set -> serving ZK artifacts from $NEXT_PUBLIC_ZK_BASE_URL"
+            echo "removing public/zk ($(du -sh public/zk 2>/dev/null | cut -f1)) from the build output"
+            rm -rf public/zk
+          else
+            echo "NEXT_PUBLIC_ZK_BASE_URL unset -> public/zk ships in the build output"
+            du -sh public/zk 2>/dev/null || true
+          fi
+    build:
+      commands:
+        - export BUN_INSTALL="$HOME/.bun"
+        - export PATH="$BUN_INSTALL/bin:$PATH"
+        # Fail the build on a missing required var or an enabled dev escape. Only four
+        # vars are required — those whose absence actually breaks something (no database,
+        # no mobile wallets, no TEE attestation). Vars with safe code defaults are
+        # deliberately not required; see the note in check-amplify-env.mjs.
+        # NEXT_PUBLIC_* is build-inlined, so a wrong value needs a rebuild, not a restart.
+        - node scripts/check-amplify-env.mjs --strict
+        # Typecheck before build so a type error fails fast with a clear message
+        # rather than surfacing as an opaque build failure.
+        - bun run typecheck
+        # Amplify deliberately does NOT expose console environment variables to the SSR runtime
+        # (AWS: "Making environment variables accessible to server-side runtimes") — it withholds
+        # them so build-phase secrets cannot leak into a running server. Only NEXT_PUBLIC_* reaches
+        # the browser, because Next inlines those into the client bundle at build time.
+        #
+        # So every server-only var read by a route handler — ASP_URL, the ASP tokens, the
+        # executor/relayer/gateway URLs — was EMPTY inside the Lambda while looking correctly set
+        # in the console. /api/compliance-fee answered 503 asp_unconfigured and the dashboard told
+        # the user "Compliance service is not configured for this deployment"; the ASP itself was
+        # healthy the whole time. Every /api/asp-* route failed the same way, which is deposits.
+        #
+        # Writing them into .env.production is the documented fix: Next loads that file during the
+        # build and resolves server-side process.env against it. Values without the NEXT_PUBLIC_
+        # prefix stay server-side — Next never ships them to the browser.
+        #
+        # This is an explicit allowlist ON PURPOSE. The tempting `env >> .env.production` would
+        # sweep the build role's AWS credentials into the deployment artifact. Add a name here when
+        # a new server-side var is introduced; a var missing from this list is silently empty at
+        # runtime, which is exactly the failure this comment exists to prevent.
+        - |
+          : > .env.production.server
+          for v in ASP_URL ASP_SCREEN_TOKEN ASP_POSTMAN_TOKEN \
+                   ASP_URL_42161 ASP_SCREEN_TOKEN_42161 ASP_POSTMAN_TOKEN_42161 ARBITRUM_RPC \
+                   ASP_URL_900002 ASP_SCREEN_TOKEN_900002 ASP_POSTMAN_TOKEN_900002 SOLANA_RPC_URL \
+                   ASP_URL_11155111 ASP_SCREEN_TOKEN_11155111 ASP_POSTMAN_TOKEN_11155111 \
+                   ZKME_MCH_NO ZKME_API_KEY \
+                   TRADE_EXECUTOR_URL PROVING_RELAYER_URL RELAYER_API_TOKEN API_GATEWAY_URL \
+                   BASE_MAINNET_RPC BASE_RPC_URL ETH_SEPOLIA_RPC OPENROUTER_API_KEY OPENROUTER_MODEL MAINTENANCE_MODE \
+                   RPC_HTTP_RATE_MAX RPC_HTTP_HEAVY_RATE_MAX \
+                   RPC_ETH_CALL_ALLOWLIST RPC_ENFORCE_CALL_ALLOWLIST; do
+            eval "val=\${$v:-}"
+            if [ -n "$val" ]; then printf '%s=%s\n' "$v" "$val" >> .env.production.server; fi
+          done
+          # NEXT_PUBLIC_* too. Next inlines those only where the source says the LITERAL
+          # `process.env.NEXT_PUBLIC_X`; a computed `env[key]` lookup is left as a runtime read, and
+          # server code does exactly that — rpcHttpGuard.ts builds the /api/rpc call-target
+          # allowlist from env["NEXT_PUBLIC_V3_*"]. With no runtime env those six addresses were
+          # absent from the allowlist, so eth_call to the v3 kernel came back rpc_target_forbidden
+          # and note resolution / migration scans 403'd. These values are public by construction
+          # (they already ship inside the client bundle), so writing them here exposes nothing new.
+          env | grep -E '^NEXT_PUBLIC_[A-Za-z0-9_]+=' >> .env.production || true
+          cat .env.production.server >> .env.production
+          # Names only — never echo the values, the build log is not a secret store.
+          echo "server env -> .env.production: $(cut -d= -f1 .env.production.server | tr '\n' ' ')"
+          rm -f .env.production.server
+        - bun run build
+  artifacts:
+    # Standalone output. Amplify's Next SSR handler picks this up.
+    baseDirectory: .next
+    files:
+      - "**/*"
+  cache:
+    paths:
+      # node_modules is deliberately NOT cached. Amplify restores the cache BEFORE
+      # `bun install`, and bun then only installs what the restored tree is missing at the
+      # top level — build 42 logged "1 package installed" and took everything else from a
+      # cache predating @wagmi/connectors 6.2.0. That older tree has no
+      # porto/node_modules/zod@4.4.3, so `zod/mini` (zod v4 only) did not resolve and
+      # webpack failed, even though bun.lock pins "porto/zod": zod@4.4.3 and the install
+      # runs --frozen-lockfile. A stale cache silently outranks a correct lockfile, and the
+      # failure looks like a dependency bug rather than a caching one.
+      # .next/cache is still cached: it speeds up builds without owning dependency resolution.
+      - .next/cache/**/*
+
+# ---------------------------------------------------------------------------
+# ARTIFACT SIZE — read before the first deploy
+#
+# Amplify caps an SSR app's BUILD OUTPUT at 220 MiB (230686720 bytes — that figure
+# appears verbatim in the failure: "The size of the build output (N) exceeds the max
+# allowed size of 230686720 bytes"). Verified against the AWS troubleshooting guide
+# on 2026-08-30; the note here previously guessed 200 MB and said to confirm it.
+#
+# The cap covers the WHOLE output, not just the server bundle. AWS's own inspection
+# procedure is `du -csh compute static`, and Next copies public/ into the standalone
+# output, so these files land in `static` and count. public/zk is now ~2.73 GB across
+# 40 zkeys — two key sets, dev-beacon for Sepolia and ceremony for Base — and being
+# high-entropy it compresses barely at all. It cannot ship through the build.
+#
+# Git LFS does NOT solve this, which is worth writing down because it looks like it
+# should: LFS changes how large files reach the build CONTAINER, while this limit is
+# on what LEAVES it. The bytes still land in `static`. LFS would buy permanent git
+# history for 2.73 GB and hit exactly the same wall.
+#
+# Confirm this on the FIRST build rather than discovering it during DNS cutover.
+#
+# If it does exceed, the fix is to stop shipping zk artifacts through Amplify and
+# serve them from S3 + CloudFront instead:
+#
+#   1. Upload the CONTENTS of public/zk to a dedicated S3 bucket (public-read or CloudFront OAC)
+#      — the bucket root holds withdraw1/, ceremony/, CEREMONY.json, NOT a nested zk/ folder.
+#   2. Set NEXT_PUBLIC_ZK_BASE_URL to that CloudFront domain (trailing slash optional).
+#   3. Nothing else — preBuild already removes public/zk whenever NEXT_PUBLIC_ZK_BASE_URL
+#      is set, so the artifact never carries it. `bun run build` does not read these files.
+#      Upload FIRST: setting the variable stops the directory shipping immediately.
+#
+# NEXT_PUBLIC_ZK_BASE_URL is now actually READ by the app — src/lib/zkAssets.ts::zkUrl, which every
+# artifact fetch routes through, and src/lib/zkAssets.check.ts fails if a new call site bypasses it.
+# It was documented here long before anything read it, so setting it used to be a silent no-op.
+#
+# Two key sets ship now, not one: /zk (dev-beacon → Sepolia) and /zk/ceremony (production ceremony
+# → Base); see src/lib/v3/configV3.ts::zkProvingBase. That doubling is how ~1.4 GB became ~2.73 GB, which makes
+# the S3 route effectively mandatory rather than a contingency.
+#   3. Have generateProof.js resolve artifact URLs against that base instead of
+#      a site-relative "/zk/..." path.
+#   4. Exclude public/zk from the Amplify build (sparse checkout, as
+#      .github/workflows/ci.yml already does for the same reason).
+#
+# That is a code change in the fetch path, not just config — scope it deliberately.
+# Serving artifacts from CloudFront is also simply better: they are immutable,
+# cacheable forever, and do not belong in an SSR bundle.
+#
+# Do NOT "solve" this by deleting circuits from public/zk. Every folder there is
+# reachable by some proof path; a missing zkey is a withdrawal that cannot be
+# proven.
+# ---------------------------------------------------------------------------
