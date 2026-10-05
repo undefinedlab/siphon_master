@@ -1,0 +1,159 @@
+.ecosystem-orbits {
+  position: relative;
+  width: 100%;
+  min-height: 450px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin: 4em 0;
+  overflow: hidden;
+}
+
+.orbits-container {
+  position: relative;
+  width: 1000px;
+  height: 900px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+  clip-path: inset(0 0 50% 0); /* Show only upper half - cover lower half */
+}
+
+.orbit {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  /* Position circles so their centers are at the bottom of visible area (middle of full container) */
+}
+
+.orbit-chains {
+  width: 600px;
+  height: 600px;
+  bottom: 100px;
+  /* Move lower: Circle center at 500px from top (slightly below visible area bottom)
+     For 600px circle (radius 300px): center at 500px
+     Bottom edge = 500 + 300 = 800px from top
+     Container is 900px, so bottom: 900 - 800 = 100px */
+}
+
+.orbit-protocols {
+  width: 900px;
+  height: 900px;
+  bottom: -50px;
+  /* Move lower: Circle center at 500px from top (slightly below visible area bottom)
+     For 900px circle (radius 450px): center at 500px
+     Bottom edge = 500 + 450 = 950px from top
+     Container is 900px, so bottom: 900 - 950 = -50px */
+}
+
+.orbit-item {
+  position: absolute;
+  transform-origin: center;
+  transition: left 0.1s linear, top 0.1s linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orbit-label {
+  padding: 0.5em 1em;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  color: var(--build-ui-text);
+  font-family: 'Source Code Pro', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.orbit-item:hover .orbit-label {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--build-ui-text-subtle);
+  transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .ecosystem-orbits {
+    min-height: 375px;
+  }
+
+  .orbits-container {
+    width: 800px;
+    height: 750px;
+  }
+
+  .orbit-chains {
+    width: 500px;
+    height: 500px;
+  }
+
+  .orbit-protocols {
+    width: 750px;
+    height: 750px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ecosystem-orbits {
+    min-height: 375px;
+  }
+
+  .orbits-container {
+    width: 800px;
+    height: 750px;
+  }
+
+  .orbit-chains {
+    width: 500px;
+    height: 500px;
+    bottom: 75px;
+  }
+
+  .orbit-protocols {
+    width: 750px;
+    height: 750px;
+    bottom: -50px;
+  }
+
+  .orbit-label {
+    font-size: 10px;
+    padding: 0.4em 0.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  .ecosystem-orbits {
+    min-height: 300px;
+  }
+
+  .orbits-container {
+    width: 600px;
+    height: 600px;
+  }
+
+  .orbit-chains {
+    width: 400px;
+    height: 400px;
+    bottom: 50px;
+  }
+
+  .orbit-protocols {
+    width: 600px;
+    height: 600px;
+    bottom: -50px;
+  }
+
+  .orbit-label {
+    font-size: 9px;
+    padding: 0.3em 0.6em;
+  }
+}
+

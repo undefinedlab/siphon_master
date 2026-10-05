@@ -1,0 +1,75 @@
+/* Predictions widget — compact dashboard tile matching the widget-card system. */
+
+.widget-pred-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.widget-pred-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.widget-pred-header .widget-card-subtitle {
+  color: rgba(126, 226, 168, 0.8);
+}
+
+.widget-pred-open {
+  background: transparent;
+  border: none;
+  color: var(--build-ui-text-subtle);
+  font-size: 1.05rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.1rem 0.2rem;
+  transition: transform 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+.widget-pred-card:hover .widget-pred-open { color: #7ee2a8; transform: translateX(2px); }
+
+.widget-pred-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem 0.75rem;
+  flex: 1;
+  min-height: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.widget-pred-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+}
+.widget-pred-q {
+  color: var(--build-ui-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.widget-pred-pct {
+  color: #7ee2a8;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.widget-pred-empty {
+  font-size: 0.72rem;
+  color: var(--build-ui-text-subtle);
+  font-style: italic;
+  margin: 0;
+}
+
+.widget-pred-cta {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #7ee2a8;
+}

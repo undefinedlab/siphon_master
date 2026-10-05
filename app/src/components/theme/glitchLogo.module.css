@@ -1,0 +1,47 @@
+.glitchLogoWrap {
+  display: inline-block;
+  color: var(--build-ui-text);
+  line-height: 0;
+  animation: logoSizeGlitch 6s linear infinite;
+}
+
+.svg {
+  width: clamp(120px, 20vw, 180px);
+  height: auto;
+  display: block;
+}
+
+@keyframes logoSizeGlitch {
+  0%,
+  32%,
+  34%,
+  70%,
+  72%,
+  100% {
+    transform: scale(1);
+  }
+  33% {
+    transform: scale(1) translate(3px, 0) skew(0deg);
+  }
+  33.5% {
+    transform: scale(3.4) translate(-8px, 4px) skew(8deg);
+  }
+  34.5% {
+    transform: scale(0.9) translate(4px, -2px) skew(-6deg);
+  }
+  71% {
+    transform: scale(1) translate(-2px, 0);
+  }
+  71.5% {
+    transform: scale(2.8) translate(10px, -3px) skew(-10deg);
+  }
+  72.5% {
+    transform: scale(1.08) translate(-3px, 1px) skew(4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitchLogoWrap {
+    animation: none;
+  }
+}

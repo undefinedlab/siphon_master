@@ -1,0 +1,44 @@
+.pp-wrap {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+.pp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+.pp-title { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em; color: var(--build-ui-text); }
+.pp-refresh {
+  background: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+  color: var(--build-ui-text-muted); cursor: pointer; width: 26px; height: 26px; font-size: 0.85rem;
+}
+.pp-refresh:disabled { opacity: 0.5; cursor: default; }
+.pp-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.pp-row {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.35rem 0.75rem;
+  padding: 0.6rem 0.75rem; border: 1px solid rgba(255,255,255,0.06); border-radius: 9px;
+  background: rgba(255,255,255,0.015);
+}
+.pp-row-main { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.pp-outcome { font-size: 0.82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-st { font-size: 0.66rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 5px; text-transform: uppercase; }
+.pp-st--open { color: #b8c8ff; background: rgba(150,180,255,0.12); }
+.pp-st--pending { color: #ffd59e; background: rgba(255,190,120,0.12); }
+.pp-st--done { color: #7ee2a8; background: rgba(126,226,168,0.12); }
+.pp-st--fail { color: #f0a0a0; background: rgba(240,138,138,0.12); }
+.pp-row-sub { grid-column: 1 / 2; display: flex; gap: 0.75rem; font-size: 0.72rem; color: var(--build-ui-text-muted); }
+.pp-payout { color: #7ee2a8; font-weight: 600; }
+.pp-row-txs { grid-column: 1 / 2; display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.68rem; }
+.pp-tx {
+  color: #b8c8ff; text-decoration: none; border: 1px solid rgba(150,180,255,0.25);
+  border-radius: 5px; padding: 0.08rem 0.4rem; background: rgba(150,180,255,0.06);
+}
+.pp-tx:hover { background: rgba(150,180,255,0.14); }
+.pp-tx--plain { color: var(--build-ui-text-muted); border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); cursor: default; }
+.pp-close {
+  grid-row: 1 / -1; grid-column: 2; align-self: center;
+  background: rgba(240,138,138,0.08); border: 1px solid rgba(240,138,138,0.3); border-radius: 7px;
+  color: #f0a0a0; font-size: 0.72rem; font-weight: 600; padding: 0.4rem 0.7rem; cursor: pointer;
+  white-space: nowrap;
+}
+.pp-close:hover:not(:disabled) { background: rgba(240,138,138,0.16); }
+.pp-close:disabled { opacity: 0.5; cursor: default; }

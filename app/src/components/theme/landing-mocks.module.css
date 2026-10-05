@@ -1,0 +1,585 @@
+.frame {
+  width: 100%;
+  max-width: 420px;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 48px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-family: var(--font-source-code), "Source Code Pro", monospace;
+  color: rgba(255, 255, 255, 0.94);
+  box-sizing: border-box;
+}
+
+.frameCanvas {
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  padding: 0.85rem;
+}
+
+.canvasGrid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 22px 22px;
+  pointer-events: none;
+}
+
+.frameChrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.frameChromeMuted {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.customizePill {
+  padding: 0.3em 0.65em;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+}
+
+.runCard {
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 193, 7, 0.35);
+  background: rgba(255, 193, 7, 0.04);
+  margin-bottom: 0.65rem;
+}
+
+.runCardDim {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.runCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.runTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.runMeta {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.45rem;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.runBar {
+  margin-top: 0.75rem;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.runBar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(255, 193, 7, 0.75);
+}
+
+.runFoot {
+  margin: 0.65rem 0 0;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28em 0.65em;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badgeArmed {
+  color: #ffc107;
+  background: rgba(255, 193, 7, 0.15);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+}
+
+.frameTitle {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.badgePending {
+  color: #ffc107;
+  background: rgba(255, 193, 7, 0.14);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.badgeExecuted {
+  color: #69f0ae;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.runFoot {
+  margin: 0.55rem 0 0;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.runCardDim {
+  margin-bottom: 0.65rem;
+}
+
+.runCardDim:last-of-type {
+  margin-bottom: 0;
+}
+
+.nodeStack {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-width: 210px;
+  margin: 0.4rem 0 0.85rem 0.35rem;
+}
+
+.node {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.nodeStrategy {
+  background: rgba(255, 193, 7, 0.16);
+  border-color: rgba(255, 193, 7, 0.45);
+}
+
+.nodeControl {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.nodeTitle {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nodeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.chip {
+  display: inline-flex;
+  padding: 0.2em 0.45em;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.aiStrip {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  padding: 0.7rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.aiLabel {
+  margin: 0 0 0.35rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.aiBubble {
+  margin: 0 0 0.55rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 12px 12px 12px 4px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.aiComposer {
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.widgetGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.widget {
+  position: relative;
+  padding: 0.85rem 0.75rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 20px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.widget::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 42%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent);
+  pointer-events: none;
+}
+
+.widgetActive {
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 18px rgba(255, 255, 255, 0.1);
+}
+
+.widgetEyebrow {
+  position: relative;
+  margin: 0 0 0.45rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.widgetValue {
+  position: relative;
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.widgetValueSm {
+  position: relative;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.widgetSub {
+  position: relative;
+  margin: 0.35rem 0 0;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.vaultCard {
+  padding: 1.1rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  margin-bottom: 0.75rem;
+}
+
+.vaultHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.networkChip {
+  padding: 0.2em 0.45em;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.vaultAmount {
+  margin: 0.55rem 0 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.vaultAmount span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gaugeRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.gaugeArc {
+  width: 28px;
+  height: 14px;
+  border: 2px solid rgba(255, 193, 7, 0.55);
+  border-bottom: none;
+  border-radius: 28px 28px 0 0;
+  opacity: 0.9;
+}
+
+.vaultTitle {
+  letter-spacing: 0.08em;
+}
+
+.vaultSecondary {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.55rem 0 0.65rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f3d97e;
+}
+
+.vaultNote {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.depositCard {
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.vaultActions {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.7rem;
+  padding: 0.3rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vaultTab,
+.vaultTabActive {
+  flex: 1;
+  text-align: center;
+  padding: 0.5em 0.4em;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.vaultTabActive {
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+}
+
+.depositField {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.4rem;
+  padding: 0.45rem 0.65rem;
+  margin-bottom: 0.55rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.depositPlaceholder {
+  flex: 1;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.depositMax {
+  padding: 0.2em 0.45em;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.depositToken {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.depositConfirm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.35rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.comingSoon {
+  padding: 0.28em 0.6em;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 193, 7, 0.35);
+  background: rgba(255, 193, 7, 0.12);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffc107;
+}
+
+.apiCard {
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.apiCardTitle {
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.apiCardCopy {
+  margin: 0 0 0.9rem;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.apiCardCopy code {
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.apiKeyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.apiKeyMask {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.apiKeyMeta {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #69f0ae;
+}
+
+.apiMethods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+.apiMethods span {
+  padding: 0.22em 0.5em;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.apiCta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.35rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (max-width: 768px) {
+  .frame {
+    max-width: none;
+  }
+}

@@ -1,0 +1,105 @@
+.legalContainer {
+  min-height: 100vh;
+  background: #000000;
+  color: var(--build-ui-text);
+}
+
+.content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 120px 2em 4em;
+  font-family: var(--font-source-code), "Source Code Pro", monospace;
+}
+
+.hero {
+  margin-bottom: 2.5em;
+  padding-bottom: 1.5em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0 0 0.75em;
+  letter-spacing: -0.02em;
+}
+
+.updated {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-subtle);
+}
+
+.section {
+  margin-bottom: 2.25em;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0 0 0.85em;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--build-ui-text);
+}
+
+.paragraph {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--build-ui-text);
+  margin: 0 0 1em;
+  font-weight: 400;
+}
+
+.list {
+  margin: 0 0 1em;
+  padding-left: 1.25em;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--build-ui-text);
+}
+
+.list li {
+  margin-bottom: 0.45em;
+}
+
+.caps {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--build-ui-text-muted);
+}
+
+.backLink {
+  display: inline-block;
+  margin-top: 2em;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-subtle);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.backLink:hover {
+  color: var(--build-ui-text);
+}
+
+.inlineLink {
+  color: var(--build-ui-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.inlineLink:hover {
+  color: var(--build-ui-text);
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 100px 1.25em 3em;
+  }
+}

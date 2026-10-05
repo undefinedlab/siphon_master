@@ -1,0 +1,1526 @@
+/* Blueprint View - Minimal */
+.blueprint-view {
+  width: calc(100% - 3rem);
+  height: 100%;
+  max-height: calc(100vh - 140px);
+  margin: 0.35rem 1.5rem 0.5rem 1.5rem;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--build-ui-text);
+}
+
+.blueprint-view--fullscreen {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  max-height: none;
+  margin: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Full-viewport dot grid — independent of React Flow pan/zoom */
+.blueprint-view--fullscreen::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: center center;
+}
+
+/* A second, slightly brighter copy of the same dots, masked to a small circle that tracks the
+   cursor (--dot-mx/--dot-my, set on mousemove in Build.tsx) — the highlight only ever shows in the
+   area actually under the pointer, not the whole background, and stays subtle either way. */
+.blueprint-view--fullscreen::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: center center;
+  -webkit-mask-image: radial-gradient(120px circle at var(--dot-mx, -9999px) var(--dot-my, -9999px), black, transparent 70%);
+  mask-image: radial-gradient(120px circle at var(--dot-mx, -9999px) var(--dot-my, -9999px), black, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.blueprint-view--fullscreen:hover::after {
+  opacity: 1;
+}
+
+.blueprint-view--fullscreen .blueprint-workspace {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+}
+
+.blueprint-view--fullscreen .blueprint-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blueprint-view--fullscreen .blueprint-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+.blueprint-view--fullscreen .blueprint-canvas .react-flow {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.blueprint-view--fullscreen .blueprint-canvas .react-flow__pane {
+  background: transparent !important;
+}
+
+.blueprint-view--dash-front .blueprint-canvas .react-flow__pane {
+  filter: blur(4px) saturate(0.75);
+  opacity: 0.42;
+  transition: filter 0.45s ease, opacity 0.45s ease;
+}
+
+.blueprint-view--fullscreen:not(.blueprint-view--dash-front) .blueprint-canvas .react-flow__pane {
+  filter: none;
+  opacity: 1;
+  transition: filter 0.45s ease, opacity 0.45s ease;
+}
+
+.blueprint-canvas .react-flow__viewport {
+  transition: none !important;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blueprint-view--fullscreen .blueprint-top-bar--mid {
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+    transform: translateY(-10px);
+  }
+
+  .blueprint-view--fullscreen .blueprint-top-bar--mid.blueprint-top-bar--visible {
+    transform: translateY(0);
+  }
+}
+
+.blueprint-view--fullscreen .blueprint-chat-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Neogen-style page shell: hero band + scrollable widget dashboard */
+.blueprint-view--dash-front {
+  --build-page-footer-offset: 2.85rem;
+  --build-page-top-offset: clamp(5.25rem, 13vh, 6.75rem);
+  --build-page-hero-band-est: clamp(10.5rem, 26vh, 14.5rem);
+  --build-desktop-widget-band-max: 400px;
+  --build-desktop-widget-band-height: clamp(
+    240px,
+    calc(
+      100dvh - var(--build-page-top-offset) - var(--build-page-hero-band-est) -
+        var(--build-page-footer-offset) - 2.5rem
+    ),
+    var(--build-desktop-widget-band-max)
+  );
+  --build-widget-row-height: min(
+    clamp(108px, 11vw, 138px),
+    max(
+      76px,
+      calc(
+        (100dvh - var(--build-page-top-offset) - var(--build-page-hero-band-est) - var(--build-page-footer-offset) - 2.75rem) / 3
+      )
+    )
+  );
+}
+
+/* Small desktop — compress hero, cap band height so layout fits without clipping */
+@media (min-width: 769px) and (max-width: 1366px) {
+  .blueprint-view--dash-front {
+    --build-page-hero-band-est: clamp(8.5rem, 22vh, 12rem);
+    --build-desktop-widget-band-max: 360px;
+  }
+}
+
+@media (min-width: 769px) and (max-height: 860px) {
+  .blueprint-view--dash-front {
+    --build-page-top-offset: clamp(4.75rem, 11vh, 5.75rem);
+    --build-page-hero-band-est: clamp(7rem, 17vh, 9.5rem);
+    --build-page-footer-offset: 2.5rem;
+    --build-desktop-widget-band-max: 320px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1100px) {
+  .blueprint-view--dash-front {
+    --build-page-hero-band-est: clamp(7.5rem, 20vh, 10.5rem);
+    --build-desktop-widget-band-max: 300px;
+  }
+}
+
+.build-page-layout {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(5.25rem, 13vh, 6.75rem) 0 max(0.5rem, env(safe-area-inset-bottom));
+  pointer-events: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Dashboard open: reserve footer space and center only when content fits */
+.blueprint-view--dash-front .build-page-layout:not(.build-page-layout--focus) {
+  justify-content: flex-start;
+  padding-top: var(--build-page-top-offset);
+  padding-bottom: max(var(--build-page-footer-offset), calc(env(safe-area-inset-bottom) + 2.35rem));
+}
+
+.blueprint-view--dash-front .build-page-layout:not(.build-page-layout--focus) .build-page-content {
+  margin-top: auto;
+  margin-bottom: auto;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.build-page-layout--focus {
+  justify-content: flex-end;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-top: clamp(3.5rem, 8vh, 5rem);
+  padding-bottom: max(9.5rem, calc(env(safe-area-inset-bottom) + 8rem));
+}
+
+/* Fixed chat input sits above the page footer when dashboard is open (collapsed-chat mode only) */
+.blueprint-view--chat-active.blueprint-view--dash-front .build-ai-prompt-dock--anchored {
+  bottom: max(2.85rem, calc(env(safe-area-inset-bottom) + 2.35rem));
+}
+
+.blueprint-view--chat-active.blueprint-view--dash-front .build-hero-chat--anchored .build-ai-thread-fade-wrap {
+  bottom: calc(max(2.85rem, env(safe-area-inset-bottom) + 2.35rem) + 8.75rem);
+}
+
+.blueprint-view--chat-active .build-page-layout--focus {
+  padding-bottom: max(9.5rem, calc(env(safe-area-inset-bottom) + 8rem));
+}
+
+.blueprint-view--chat-active.blueprint-view--dash-front .build-page-layout {
+  padding-bottom: max(10.5rem, calc(env(safe-area-inset-bottom) + 9rem));
+  top: 0;
+  bottom: 0;
+  height: auto;
+  inset: 0;
+  justify-content: center;
+  padding-top: clamp(5.25rem, 13vh, 6.75rem);
+}
+
+.blueprint-view--chat-active.blueprint-view--dash-front .build-page-content {
+  max-width: 1400px;
+  justify-content: center;
+  gap: clamp(0.85rem, 2.5vh, 1.5rem);
+}
+
+.blueprint-view--chat-active.blueprint-view--dash-front .build-hero-band {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.blueprint-view--chat-active.blueprint-view--dash-front .build-widget-band {
+  margin-top: clamp(1rem, 3vh, 2rem);
+}
+
+/* Chat active: only occupy the bottom strip so the canvas stays interactive */
+.blueprint-view--chat-active:not(.blueprint-view--dash-front) .build-page-layout {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  justify-content: flex-end;
+}
+
+.build-page-content {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  pointer-events: none;
+}
+
+.build-page-layout:not(.build-page-layout--focus) .build-page-content {
+  gap: 0;
+}
+
+.build-page-layout:not(.build-page-layout--focus) .build-hero-band {
+  margin-bottom: 0;
+}
+
+.build-page-layout:not(.build-page-layout--focus) .build-widget-band {
+  margin-top: clamp(1.5rem, 4vh, 2.75rem);
+  padding-bottom: 0.35rem;
+}
+
+.blueprint-view--dash-front .build-page-layout:not(.build-page-layout--focus) .build-widget-band {
+  margin-top: clamp(1rem, 2.8vh, 2rem);
+  padding-bottom: 0;
+}
+
+/* Fixed footer — terms, privacy, about */
+.build-page-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding: 0.65rem 1rem max(0.35rem, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.build-page-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem 1rem;
+  max-width: min(100%, 22rem);
+  pointer-events: auto;
+}
+
+.build-page-footer-link {
+  font-family: var(--font-source-code), monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-subtle);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.build-page-footer-link:hover {
+  color: var(--build-ui-text);
+}
+
+.build-page-layout--focus .build-page-content {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-width: min(680px, 100%);
+  width: 100%;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.build-hero-band {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 1.5rem;
+  pointer-events: none;
+}
+
+.build-hero-swap {
+  position: relative;
+  width: min(920px, 94vw);
+  max-width: 920px;
+  margin: 0 auto;
+  min-height: clamp(7.25rem, 17vh, 10.5rem);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  transition:
+    min-height 0.38s ease,
+    max-width 0.38s ease,
+    width 0.38s ease;
+}
+
+.build-hero-band--customizing {
+  width: 100%;
+  padding-inline: clamp(1rem, 2vw, 1.5rem);
+  box-sizing: border-box;
+}
+
+.build-hero-band--customizing .build-hero-swap {
+  width: 100%;
+  max-width: 100%;
+  min-height: clamp(11rem, 28vh, 16rem);
+}
+
+.build-hero-band--library-visible {
+  margin-top: clamp(0.55rem, 1.6vh, 1.15rem);
+}
+
+.build-hero-band--library-visible .build-hero-swap {
+  justify-content: flex-end;
+}
+
+.build-hero-band--library-visible .build-hero-swap-pane--library {
+  justify-content: flex-end;
+  padding-top: clamp(0.35rem, 1vh, 0.65rem);
+}
+
+.blueprint-view--dash-front .build-page-content:has(.build-hero-band--library-visible) .build-widget-band {
+  margin-top: clamp(0.45rem, 1.2vh, 0.85rem);
+}
+
+.build-hero-swap-pane {
+  transition: opacity 0.38s ease;
+}
+
+.build-hero-swap-pane--chat {
+  opacity: 1;
+  pointer-events: none;
+}
+
+.build-hero-swap-pane--library {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.build-hero-band.build-dashboard-theme {
+  pointer-events: none;
+}
+
+.build-hero-band.build-dashboard-theme.build-hero-band--customizing {
+  pointer-events: none;
+}
+
+.build-hero-band--library-visible.build-dashboard-theme .build-widget-customize-panel--hero,
+.build-hero-band--library-visible.build-dashboard-theme .build-widget-customize-panel--hero * {
+  pointer-events: auto;
+}
+
+.build-hero-band--library-visible .build-hero-swap-pane--chat {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.build-hero-band--library-visible .build-hero-swap-pane--library {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.build-page-layout--focus .build-hero-band {
+  flex: 0 1 auto;
+  min-height: 0;
+  align-items: flex-end;
+  padding: 0 1.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.build-widget-band {
+  flex-shrink: 0;
+  width: 100%;
+  padding-bottom: 0.5rem;
+  pointer-events: auto;
+}
+
+.build-widget-band--hidden {
+  display: none !important;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .build-widget-band {
+    width: 100%;
+    max-width: 100%;
+    padding-inline: clamp(1.5rem, 8.5vw, 2.25rem);
+    box-sizing: border-box;
+  }
+
+  .build-page-footer {
+    padding: 0.55rem clamp(1rem, 5vw, 2.25rem) max(0.2rem, env(safe-area-inset-bottom));
+  }
+
+  .build-page-footer-nav {
+    gap: 0.4rem 0.75rem;
+  }
+
+  .build-page-footer-link {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+
+  .blueprint-view--chat-active .build-page-footer,
+  .blueprint-view:has(.build-hero-band--customizing) .build-page-footer {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .build-page-content {
+    width: 100%;
+    max-width: 100%;
+    align-items: stretch;
+  }
+}
+
+.build-hero-chat {
+  width: min(656px, 100%);
+  max-width: 656px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  pointer-events: none;
+}
+
+.build-hero-chat.build-hero-chat--centered {
+  width: min(920px, 94vw);
+  max-width: 920px;
+}
+
+.build-page-layout--focus .build-hero-chat {
+  max-width: min(656px, 100%);
+  max-height: none;
+  height: auto;
+  min-height: 0;
+}
+
+/* Sticky app nav is z-index 10050 — pass clicks through its empty center when build toolbar is open */
+body.build-view-expanded .dapp-main-container nav {
+  pointer-events: none;
+}
+
+body.build-view-expanded .dapp-main-container nav .logo,
+body.build-view-expanded .dapp-main-container nav .logo-link,
+body.build-view-expanded .dapp-main-container nav .nav-wallet,
+body.build-view-expanded .dapp-main-container nav .nav-wallet *,
+body.build-view-expanded .dapp-main-container nav .nav-center,
+body.build-view-expanded .dapp-main-container nav .nav-right,
+body.build-view-expanded .dapp-main-container nav a,
+body.build-view-expanded .dapp-main-container nav button {
+  pointer-events: auto;
+}
+
+.blueprint-view--fullscreen .blueprint-top-bar--mid {
+  position: fixed;
+  top: calc(4.25rem + env(safe-area-inset-top, 0px));
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  height: auto;
+  max-height: none;
+  width: max-content;
+  max-width: min(96vw, 800px);
+  display: inline-flex;
+  box-sizing: border-box;
+  transform: translateX(-50%) translateY(-10px);
+  z-index: 10055;
+  margin: 0;
+  width: auto;
+  max-width: min(96vw, 800px);
+  padding: 0.4rem 0.55rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.38s ease,
+    visibility 0.38s ease,
+    transform 0.38s ease;
+}
+
+.blueprint-view--fullscreen .blueprint-top-bar--mid.blueprint-top-bar--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.blueprint-top-bar--expanded .blueprint-toolbar-end--scene {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.blueprint-top-bar--expanded .blueprint-toolbar-sep {
+  display: inline-block;
+  width: 1px;
+  height: 1.65rem;
+  margin: 0 0.15rem;
+  background: rgba(255, 255, 255, 0.16);
+  flex-shrink: 0;
+}
+
+.blueprint-top-bar--expanded .blueprint-add-menu-anchor {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.blueprint-top-bar--expanded .blueprint-add-btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--build-ui-text);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.blueprint-top-bar--expanded .blueprint-add-btn--icon:hover,
+.blueprint-top-bar--expanded .blueprint-add-btn--active {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--build-ui-text);
+}
+
+.blueprint-top-bar--expanded .blueprint-add-btn--labeled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 34px;
+  padding: 0 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--build-ui-text);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.blueprint-top-bar--expanded .blueprint-add-btn--labeled:hover,
+.blueprint-top-bar--expanded .blueprint-add-btn--active {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--build-ui-text);
+}
+
+.blueprint-top-bar--expanded .blueprint-add-menu {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  right: 0;
+  z-index: 45;
+  min-width: 11.5rem;
+  padding: 0.35rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(8, 8, 10, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.blueprint-top-bar--expanded .blueprint-add-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.45rem 0.5rem;
+  font-family: var(--font-source-code), monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-subtle);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.2rem;
+}
+
+.blueprint-top-bar--expanded .blueprint-add-menu-back {
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: var(--build-ui-text-muted);
+  font-family: var(--font-source-code), monospace;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.blueprint-top-bar--expanded .blueprint-add-menu-back:hover {
+  color: var(--build-ui-text);
+}
+
+.blueprint-top-bar--expanded .blueprint-add-menu-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.blueprint-top-bar--expanded .blueprint-add-menu-item:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--build-ui-text);
+}
+
+.blueprint-top-bar--expanded .blueprint-add-menu-item.inactive,
+.blueprint-top-bar--expanded .blueprint-add-menu-item:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.blueprint-top-bar--expanded .blueprint-add-menu-item-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.blueprint-top-bar--expanded .blueprint-file-group {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+}
+
+.blueprint-top-bar--expanded .blueprint-file-group .blueprint-folder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blueprint-top-bar--expanded .blueprint-folder-btn {
+  border-radius: 8px 0 0 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-right: none !important;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+}
+
+.blueprint-top-bar--expanded .blueprint-file-name-input {
+  border-radius: 0 8px 8px 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: none;
+  height: 34px;
+  line-height: 34px;
+  width: min(9rem, 28vw);
+  max-width: min(9rem, 28vw);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.blueprint-top-bar--expanded .blueprint-file-name-input:focus {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.blueprint-top-bar--expanded .blueprint-file-group:focus-within .blueprint-folder-btn {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.blueprint-top-bar--expanded .blueprint-save-btn--labeled,
+.blueprint-top-bar--expanded .blueprint-run-btn--labeled,
+.blueprint-top-bar--expanded .blueprint-execute-btn--labeled,
+.blueprint-top-bar--expanded .blueprint-restart-btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 34px;
+  padding: 0 0.65rem;
+  min-width: max-content;
+  width: auto;
+  flex-shrink: 0;
+  position: relative;
+  overflow: visible;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.blueprint-top-bar--expanded .blueprint-save-btn--labeled svg,
+.blueprint-top-bar--expanded .blueprint-run-btn--labeled svg,
+.blueprint-top-bar--expanded .blueprint-execute-btn--labeled svg,
+.blueprint-top-bar--expanded .blueprint-toolbar-label {
+  pointer-events: none;
+  user-select: none;
+}
+
+.blueprint-top-bar--expanded .blueprint-restart-btn--icon {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--build-ui-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.blueprint-top-bar--expanded .blueprint-restart-btn--icon:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: var(--build-ui-text);
+}
+
+.blueprint-top-bar--expanded .blueprint-restart-btn--icon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.blueprint-top-bar--expanded .blueprint-toolbar-label {
+  font-family: var(--font-source-code), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.blueprint-top-bar--expanded .blueprint-execute-btn--labeled {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 32px;
+  padding: 0 0.65rem;
+}
+
+.blueprint-view--fullscreen .blueprint-top-bar:not(.blueprint-top-bar--mid) {
+  position: fixed;
+  top: auto;
+  bottom: max(2rem, env(safe-area-inset-bottom));
+  left: auto;
+  right: 1rem;
+  z-index: 25;
+  margin: 0;
+  width: auto;
+  max-width: calc(100vw - 2rem);
+  padding: 0.5rem 0.65rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  justify-content: flex-end;
+}
+
+.blueprint-view--fullscreen .blueprint-top-bar--dock {
+  gap: 0.4rem;
+}
+
+.blueprint-view--fullscreen .blueprint-top-bar--icons .blueprint-save-btn,
+.blueprint-view--fullscreen .blueprint-top-bar--icons .blueprint-restart-btn,
+.blueprint-view--fullscreen .blueprint-top-bar--icons .blueprint-run-btn,
+.blueprint-view--fullscreen .blueprint-top-bar--icons .blueprint-execute-btn {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  padding: 0;
+  gap: 0;
+}
+
+.blueprint-view--fullscreen .blueprint-top-bar--icons .blueprint-file-name-input {
+  max-width: 7.5rem;
+  font-size: 10px;
+  height: 34px;
+}
+
+.blueprint-top-bar--right .blueprint-toolbar-spacer {
+  display: none;
+}
+
+.dapp-container:has(.blueprint-view--fullscreen),
+.pro-mode-content:has(.blueprint-view--fullscreen) {
+  overflow: hidden !important;
+}
+
+.blueprint-workspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  gap: 0;
+}
+
+.blueprint-stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.blueprint-chat-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.build-hero-chat.build-hero-chat--centered {
+  justify-content: center;
+}
+
+.build-hero-chat.build-hero-chat--anchored {
+  justify-content: flex-end;
+  height: auto;
+}
+
+.blueprint-conversation-pane {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0.5rem 1.5rem 0.25rem;
+  background: transparent;
+  pointer-events: none;
+}
+
+.blueprint-input-pane {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.35rem 1.5rem 0.65rem;
+  background: transparent;
+  pointer-events: none;
+}
+
+.blueprint-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.blueprint-view--fullscreen:has(.blueprint-top-bar--visible) .build-sim-toast {
+  top: calc(9.5rem + env(safe-area-inset-top, 0px));
+}
+
+.blueprint-canvas .react-flow {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.blueprint-canvas .react-flow__node {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-sizing: border-box;
+}
+
+.blueprint-canvas .react-flow__handle {
+  width: 8px;
+  height: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.blueprint-canvas .react-flow__renderer {
+  width: 100%;
+  height: 100%;
+}
+
+.blueprint-view.loaded {
+  opacity: 1;
+}
+
+@keyframes build-dash-hero-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes build-dash-widgets-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Short viewports: tighten hero so widgets + footer stay in frame */
+@media (max-height: 780px) and (min-width: 769px) {
+  .blueprint-view--dash-front {
+    --build-page-hero-band-est: clamp(8.5rem, 22vh, 11.5rem);
+  }
+
+  .blueprint-view--dash-front .build-ai-tagline {
+    font-size: clamp(1.75rem, 3.6vw, 2.55rem);
+  }
+
+  .blueprint-view--dash-front .build-ai-tagline-sub {
+    margin-top: 0.65rem;
+    font-size: clamp(0.9rem, 1.9vw, 1.05rem);
+  }
+
+  .blueprint-view--dash-front .build-ai-centered-column {
+    gap: 1.15rem;
+  }
+}
+
+/* Mobile: full-screen build + chat offset */
+@media (max-width: 768px) {
+  .blueprint-view {
+    margin-top: 0.5rem;
+  }
+
+  .blueprint-view--fullscreen {
+    margin: 0;
+  }
+
+  .blueprint-view--dash-front.blueprint-view--fullscreen {
+    opacity: 1;
+    transition: none;
+  }
+
+  .blueprint-view--dash-front {
+    --build-page-top-offset: clamp(5.85rem, 12.5vh, 7rem);
+    --build-page-hero-band-est: clamp(9rem, 22vh, 12rem);
+    --build-page-footer-offset: 3.15rem;
+    --build-widget-row-height: clamp(
+      98px,
+      calc(
+        (100dvh - var(--build-page-top-offset) - var(--build-page-hero-band-est) - var(--build-page-footer-offset) - 2.75rem) / 2
+      ),
+      32dvh
+    );
+  }
+
+  .build-page-layout {
+    padding: clamp(4.5rem, 10vh, 5.5rem) 0 max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .blueprint-view--dash-front .build-page-layout:not(.build-page-layout--focus) {
+    padding-top: var(--build-page-top-offset);
+    padding-bottom: max(var(--build-page-footer-offset), calc(env(safe-area-inset-bottom) + 2.65rem));
+  }
+
+  .build-page-layout--focus {
+    padding-bottom: max(9rem, calc(env(safe-area-inset-bottom) + 7.5rem));
+  }
+
+  .blueprint-view--chat-active .build-ai-prompt-dock--anchored {
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    padding-inline: 0.85rem;
+    box-sizing: border-box;
+    bottom: max(1.65rem, calc(env(safe-area-inset-bottom) + 1.55rem));
+  }
+
+  .blueprint-view--chat-active .build-hero-chat--anchored .build-ai-thread-fade-wrap {
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    padding-inline: 0.85rem;
+    box-sizing: border-box;
+    bottom: calc(max(1.65rem, calc(env(safe-area-inset-bottom) + 1.55rem)) + 8.75rem);
+  }
+
+  .blueprint-view--chat-active.blueprint-view--dash-front .build-ai-prompt-dock--anchored {
+    bottom: max(2.85rem, calc(env(safe-area-inset-bottom) + 2.35rem));
+  }
+
+  .blueprint-view--chat-active.blueprint-view--dash-front .build-hero-chat--anchored .build-ai-thread-fade-wrap {
+    bottom: calc(max(2.85rem, calc(env(safe-area-inset-bottom) + 2.35rem)) + 8.75rem);
+  }
+
+  .build-hero-band {
+    width: 100%;
+    padding: 0 0.85rem;
+    box-sizing: border-box;
+  }
+
+  .blueprint-view--dash-front .build-hero-band:not(.build-hero-band--customizing) {
+    padding-inline: 0.85rem;
+  }
+
+  .blueprint-view--dash-front .build-hero-chat.build-hero-chat--centered {
+    width: 100%;
+    max-width: none;
+  }
+
+  /* Widgets collapsed on mobile — tagline centered, input pinned near bottom */
+  .blueprint-view--fullscreen:not(.blueprint-view--dash-front) .build-page-layout:not(.build-page-layout--focus) {
+    justify-content: flex-start;
+    align-items: stretch;
+    padding-top: var(--build-page-top-offset);
+    padding-bottom: max(1.85rem, calc(env(safe-area-inset-bottom) + 1.75rem));
+  }
+
+  .blueprint-view--fullscreen:not(.blueprint-view--dash-front)
+    .build-page-layout:not(.build-page-layout--focus)
+    .build-page-content {
+    flex: 1;
+    min-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    width: 100%;
+    max-width: none;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+  }
+
+  .blueprint-view--fullscreen:not(.blueprint-view--dash-front) .build-hero-band {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    padding-inline: 0.85rem;
+    padding-top: 0;
+    align-items: stretch;
+    justify-content: flex-start;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blueprint-view--fullscreen:not(.blueprint-view--dash-front) .build-hero-swap {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blueprint-view--fullscreen:not(.blueprint-view--dash-front) .build-hero-swap-pane--chat {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blueprint-view--fullscreen:not(.blueprint-view--dash-front) .build-hero-chat {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blueprint-view--fullscreen:not(.blueprint-view--dash-front) .build-ai-centered-column {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .blueprint-view--fullscreen:not(.blueprint-view--dash-front) .build-ai-tagline-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: none;
+    margin-bottom: 0;
+    padding-inline: 0.85rem;
+  }
+
+  .blueprint-view--fullscreen:not(.blueprint-view--dash-front) .build-ai-prompt-dock {
+    flex-shrink: 0;
+    margin-top: 0;
+    margin-bottom: 0.25rem;
+  }
+
+  .build-page-content {
+    gap: 1rem;
+    width: 100%;
+    max-width: none;
+    align-items: stretch;
+  }
+
+  .build-hero-swap {
+    width: 100%;
+    max-width: none;
+  }
+
+  .blueprint-view--fullscreen .blueprint-top-bar:not(.blueprint-top-bar--mid) {
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+    right: 0.5rem;
+    left: auto;
+    max-width: calc(100vw - 1rem);
+    padding: 0.45rem 0.55rem;
+  }
+
+  .blueprint-view--fullscreen .blueprint-top-bar--mid {
+    top: calc(5.35rem + env(safe-area-inset-top, 0px));
+    bottom: auto;
+    left: clamp(1.5rem, 8.5vw, 2.25rem);
+    right: clamp(1.5rem, 8.5vw, 2.25rem);
+    height: auto;
+    max-height: none;
+    width: auto;
+    max-width: none;
+    display: flex;
+    box-sizing: border-box;
+    padding: 0.65rem 0.75rem;
+    transform: translateY(-10px);
+  }
+
+  .blueprint-view--fullscreen .blueprint-top-bar--mid.blueprint-top-bar--visible {
+    transform: translateY(0);
+  }
+
+  .blueprint-top-bar--expanded .blueprint-toolbar-end--scene {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.45rem;
+    width: 100%;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-toolbar-end--scene::-webkit-scrollbar {
+    display: none;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-file-group {
+    flex: 1 1 auto;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-file-name-input {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 4.5rem;
+    max-width: 7.5rem;
+    height: 42px;
+    line-height: 42px;
+    font-size: 12px;
+    padding: 0 0.5rem;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-folder-btn {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-folder-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-save-btn--labeled,
+  .blueprint-top-bar--expanded .blueprint-run-btn--labeled,
+  .blueprint-top-bar--expanded .blueprint-execute-btn--labeled,
+  .blueprint-top-bar--expanded .blueprint-add-btn--labeled {
+    height: 42px;
+    min-height: 42px;
+    min-width: 42px;
+    padding: 0 0.7rem;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-save-btn--labeled svg,
+  .blueprint-top-bar--expanded .blueprint-run-btn--labeled svg,
+  .blueprint-top-bar--expanded .blueprint-execute-btn--labeled svg,
+  .blueprint-top-bar--expanded .blueprint-add-btn--labeled svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-restart-btn--icon,
+  .blueprint-top-bar--expanded .blueprint-add-btn--icon {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-restart-btn--icon svg,
+  .blueprint-top-bar--expanded .blueprint-add-btn--icon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .blueprint-top-bar--expanded .blueprint-toolbar-sep {
+    display: inline-block;
+    height: 1.65rem;
+    margin: 0 0.12rem;
+  }
+
+  .build-sim-toast {
+    top: calc(7.05rem + env(safe-area-inset-top, 0px));
+  }
+
+  .blueprint-view--fullscreen:has(.blueprint-top-bar--visible) .build-sim-toast {
+    top: calc(9.95rem + env(safe-area-inset-top, 0px));
+  }
+
+  .blueprint-top-bar--expanded .blueprint-toolbar-label {
+    display: none;
+  }
+
+  .blueprint-view--dash-front .build-page-layout:not(.build-page-layout--focus) .build-page-content {
+    margin-top: auto;
+    margin-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .blueprint-view--dash-front .build-hero-band {
+    padding-top: clamp(1.15rem, 3.5vh, 1.85rem);
+  }
+
+  .build-hero-swap {
+    width: 100%;
+    max-width: 100%;
+    min-height: clamp(8rem, 22vh, 11rem);
+  }
+
+  .build-hero-band--customizing {
+    padding-inline: clamp(1.5rem, 8.5vw, 2.25rem);
+  }
+
+  .build-dashboard-theme .build-widget-customize-panel--hero {
+    min-height: clamp(10.5rem, 26vh, 14.5rem);
+    max-height: min(56vh, 460px);
+  }
+
+  .build-hero-band--customizing .build-hero-swap {
+    min-height: clamp(10.5rem, 26vh, 14.5rem);
+  }
+
+  .build-dashboard-theme .build-widget-customize-panel--hero .build-widget-customize-title {
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    line-height: 1.25;
+  }
+
+  .build-dashboard-theme .build-widget-customize-panel--hero .build-widget-customize-subtitle {
+    font-size: 12px;
+    line-height: 1.35;
+    min-height: calc(12px * 1.35);
+  }
+
+  .build-dashboard-theme .build-widget-customize-panel--hero .build-widget-customize-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .build-dashboard-theme .build-widget-customize-panel--hero .build-widget-customize-close-mobile {
+    display: inline-flex;
+  }
+
+  .build-dashboard-theme .build-widget-customize-panel--hero .build-widget-customize-panel-head {
+    padding-right: 6.5rem;
+  }
+
+  .blueprint-view--dash-front .build-widget-band {
+    min-height: calc(2 * var(--build-widget-row-height) + 1 * 0.65rem);
+  }
+
+  .blueprint-view--dash-front:not(.loaded) .build-ai-tagline-block {
+    opacity: 0;
+    animation: none;
+  }
+
+  .blueprint-view--dash-front.loaded .build-ai-tagline-block {
+    opacity: 0;
+    animation: build-dash-hero-fade-in 0.72s ease 0.12s forwards;
+  }
+
+  .blueprint-view--dash-front:not(.loaded) .build-widget-band {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .blueprint-view--dash-front.loaded .build-widget-band {
+    opacity: 0;
+    visibility: visible;
+    animation: build-dash-widgets-reveal 0.48s ease 0.78s forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blueprint-view--dash-front.loaded .build-ai-tagline-block {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .blueprint-view--dash-front.loaded .build-widget-band {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
+  .build-page-layout:not(.build-page-layout--focus) .build-widget-band {
+    margin-top: 1.5rem;
+  }
+
+  .blueprint-view--dash-front .build-page-layout:not(.build-page-layout--focus) .build-widget-band {
+    margin-top: clamp(2rem, 5.5vh, 2.85rem);
+  }
+
+  .blueprint-view--dash-front .build-ai-centered-column {
+    gap: 2.5rem;
+  }
+
+  .blueprint-view--dash-front .build-ai-tagline-block {
+    margin-bottom: 0.5rem;
+  }
+
+  .blueprint-view--dash-front .build-ai-prompt-dock .build-ai-marquee {
+    margin-top: 0.65rem;
+  }
+
+  .build-ai-centered-column {
+    width: 100%;
+    max-width: none;
+    gap: 1.75rem;
+  }
+
+  /* Hero copy — same size/width collapsed or expanded on mobile */
+  .build-hero-chat--centered .build-ai-tagline-block {
+    width: 100%;
+    max-width: none;
+    padding-inline: 0.85rem;
+    box-sizing: border-box;
+  }
+
+  .build-hero-chat--centered .build-ai-tagline-welcome {
+    margin-bottom: 0.7rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+  }
+
+  .build-hero-chat--centered .build-ai-tagline {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: none;
+    font-size: clamp(2.6rem, 11vw, 3.6rem);
+    line-height: 1.08;
+  }
+
+  .build-hero-chat--centered .build-ai-tagline-sub {
+    margin-top: 0.85rem;
+    width: 100%;
+    max-width: none;
+    font-size: clamp(1rem, 4.2vw, 1.2rem);
+  }
+
+  .build-ai-marquee-chip {
+    font-size: 15px;
+    padding: 0.45rem 0.7rem;
+    letter-spacing: 0.05em;
+  }
+
+  .blueprint-workspace {
+    gap: 0;
+  }
+
+  .blueprint-conversation-pane {
+    padding: 0.5rem 1rem 0.35rem;
+  }
+
+  .blueprint-input-pane {
+    padding: 0.5rem 1rem;
+  }
+}
+
+.blueprint-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.toolbar-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--build-ui-text);
+  cursor: pointer;
+  font-family: var(--font-source-code), monospace;
+  font-size: 12px;
+}
+
+.toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Hide React Flow Attribution */
+.blueprint-view .react-flow__attribution {
+  display: none !important;
+}

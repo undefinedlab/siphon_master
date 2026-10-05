@@ -1,0 +1,1382 @@
+{
+  "address": "4SN5QyVNRCjR3KsbAc9e5xVAoK6JHwrTsB1yGy7WFF7b",
+  "metadata": {
+    "name": "per_matching",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "PER-based private matching engine"
+  },
+  "instructions": [
+    {
+      "name": "add_user_order",
+      "docs": [
+        "Writes private order details into an already permissioned+delegated user_order PDA."
+      ],
+      "discriminator": [
+        73,
+        78,
+        152,
+        118,
+        110,
+        178,
+        233,
+        148
+      ],
+      "accounts": [
+        {
+          "name": "user_order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "arg",
+                "path": "ticket_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "market",
+          "type": "pubkey"
+        },
+        {
+          "name": "ticket_id",
+          "type": "u64"
+        },
+        {
+          "name": "side",
+          "type": "u8"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "price",
+          "type": "u64"
+        },
+        {
+          "name": "salt",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "clear_orderbook",
+      "discriminator": [
+        29,
+        198,
+        61,
+        21,
+        17,
+        7,
+        177,
+        47
+      ],
+      "accounts": [
+        {
+          "name": "orderbook",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  100,
+                  101,
+                  114,
+                  98,
+                  111,
+                  111,
+                  107
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "relayer",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "market",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "create_orderbook",
+      "discriminator": [
+        103,
+        86,
+        215,
+        172,
+        216,
+        255,
+        114,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "orderbook",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  100,
+                  101,
+                  114,
+                  98,
+                  111,
+                  111,
+                  107
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "relayer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "market",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "create_permission",
+      "discriminator": [
+        190,
+        182,
+        26,
+        164,
+        156,
+        221,
+        8,
+        0
+      ],
+      "accounts": [
+        {
+          "name": "permissioned_account"
+        },
+        {
+          "name": "permission",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "permission_program",
+          "address": "ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "account_type",
+          "type": {
+            "defined": {
+              "name": "AccountType"
+            }
+          }
+        },
+        {
+          "name": "members",
+          "type": {
+            "option": {
+              "vec": {
+                "defined": {
+                  "name": "Member"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "delegate_pda",
+      "discriminator": [
+        248,
+        217,
+        193,
+        46,
+        124,
+        191,
+        64,
+        135
+      ],
+      "accounts": [
+        {
+          "name": "buffer_pda",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pda"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                51,
+                18,
+                105,
+                108,
+                253,
+                32,
+                237,
+                238,
+                43,
+                164,
+                195,
+                7,
+                238,
+                105,
+                241,
+                223,
+                227,
+                160,
+                215,
+                87,
+                2,
+                210,
+                124,
+                113,
+                3,
+                94,
+                46,
+                38,
+                211,
+                68,
+                207,
+                182
+              ]
+            }
+          }
+        },
+        {
+          "name": "delegation_record_pda",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pda"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "delegation_metadata_pda",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pda"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "pda",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "signer": true
+        },
+        {
+          "name": "validator",
+          "optional": true
+        },
+        {
+          "name": "owner_program",
+          "address": "4SN5QyVNRCjR3KsbAc9e5xVAoK6JHwrTsB1yGy7WFF7b"
+        },
+        {
+          "name": "delegation_program",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "account_type",
+          "type": {
+            "defined": {
+              "name": "AccountType"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "init_stub_order_ticket",
+      "docs": [
+        "Test-only helper: create an OrderTicket-like account on L1 with only commitment."
+      ],
+      "discriminator": [
+        84,
+        201,
+        169,
+        58,
+        5,
+        187,
+        219,
+        139
+      ],
+      "accounts": [
+        {
+          "name": "order_ticket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  117,
+                  98,
+                  95,
+                  116,
+                  105,
+                  99,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "ticket_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "ticket_id",
+          "type": "u64"
+        },
+        {
+          "name": "user",
+          "type": "pubkey"
+        },
+        {
+          "name": "order_commitment",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "init_user_order",
+      "docs": [
+        "Creates the user_order PDA *without* placing private order details on L1.",
+        "The user later submits `add_user_order` via the tokenized TEE endpoint."
+      ],
+      "discriminator": [
+        129,
+        56,
+        246,
+        188,
+        55,
+        178,
+        142,
+        113
+      ],
+      "accounts": [
+        {
+          "name": "user_order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "arg",
+                "path": "ticket_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "market",
+          "type": "pubkey"
+        },
+        {
+          "name": "ticket_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "prepare_matched_order",
+      "discriminator": [
+        219,
+        125,
+        229,
+        83,
+        173,
+        122,
+        165,
+        12
+      ],
+      "accounts": [
+        {
+          "name": "matched_order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104,
+                  101,
+                  100,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market"
+              },
+              {
+                "kind": "arg",
+                "path": "match_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "relayer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "market",
+          "type": "pubkey"
+        },
+        {
+          "name": "match_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "process_undelegation",
+      "discriminator": [
+        196,
+        28,
+        41,
+        206,
+        48,
+        37,
+        51,
+        167
+      ],
+      "accounts": [
+        {
+          "name": "base_account",
+          "writable": true
+        },
+        {
+          "name": "buffer"
+        },
+        {
+          "name": "payer",
+          "writable": true
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "account_seeds",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
+      "name": "record_user_order",
+      "discriminator": [
+        133,
+        140,
+        155,
+        46,
+        130,
+        208,
+        8,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "orderbook",
+          "writable": true
+        },
+        {
+          "name": "user_order",
+          "writable": true
+        },
+        {
+          "name": "relayer",
+          "signer": true
+        },
+        {
+          "name": "order_ticket"
+        }
+      ],
+      "args": [
+        {
+          "name": "ticket_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "trigger_matching",
+      "discriminator": [
+        24,
+        36,
+        231,
+        231,
+        134,
+        27,
+        5,
+        95
+      ],
+      "accounts": [
+        {
+          "name": "orderbook",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  100,
+                  101,
+                  114,
+                  98,
+                  111,
+                  111,
+                  107
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market"
+              }
+            ]
+          }
+        },
+        {
+          "name": "matched_order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104,
+                  101,
+                  100,
+                  95,
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market"
+              },
+              {
+                "kind": "arg",
+                "path": "match_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "relayer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "permission_matched_order",
+          "writable": true
+        },
+        {
+          "name": "permission_program",
+          "address": "ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1"
+        },
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magic_context",
+          "writable": true,
+          "address": "MagicContext1111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "market",
+          "type": "pubkey"
+        },
+        {
+          "name": "match_id",
+          "type": "u64"
+        },
+        {
+          "name": "max_matches",
+          "type": "u8"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "L1OrderTicket",
+      "discriminator": [
+        223,
+        253,
+        4,
+        153,
+        186,
+        184,
+        18,
+        51
+      ]
+    },
+    {
+      "name": "MatchedOrder",
+      "discriminator": [
+        52,
+        93,
+        240,
+        68,
+        80,
+        25,
+        161,
+        241
+      ]
+    },
+    {
+      "name": "OrderbookState",
+      "discriminator": [
+        150,
+        112,
+        63,
+        68,
+        126,
+        10,
+        73,
+        129
+      ]
+    },
+    {
+      "name": "UserOrder",
+      "discriminator": [
+        25,
+        180,
+        32,
+        86,
+        234,
+        56,
+        109,
+        0
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "MatchRoundPublishedEvent",
+      "discriminator": [
+        28,
+        96,
+        103,
+        144,
+        247,
+        124,
+        219,
+        9
+      ]
+    },
+    {
+      "name": "UserOrderCreatedEvent",
+      "discriminator": [
+        13,
+        74,
+        66,
+        191,
+        219,
+        105,
+        76,
+        253
+      ]
+    },
+    {
+      "name": "UserOrderRecordedEvent",
+      "discriminator": [
+        221,
+        231,
+        1,
+        158,
+        123,
+        115,
+        67,
+        24
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidPda",
+      "msg": "Invalid PDA for the given seeds."
+    },
+    {
+      "code": 6001,
+      "name": "TicketMismatch",
+      "msg": "Order ticket does not match request."
+    },
+    {
+      "code": 6002,
+      "name": "UserMismatch",
+      "msg": "Order ticket user mismatch."
+    },
+    {
+      "code": 6003,
+      "name": "TicketNotPending",
+      "msg": "Order ticket not pending."
+    },
+    {
+      "code": 6004,
+      "name": "CommitmentMismatch",
+      "msg": "Order commitment mismatch."
+    },
+    {
+      "code": 6005,
+      "name": "OrderbookFull",
+      "msg": "Orderbook capacity reached."
+    },
+    {
+      "code": 6006,
+      "name": "UnauthorizedRelayer",
+      "msg": "Relayer is not authorized for this orderbook."
+    },
+    {
+      "code": 6007,
+      "name": "MarketMismatch",
+      "msg": "Market mismatch."
+    },
+    {
+      "code": 6008,
+      "name": "UserOrderNotPending",
+      "msg": "User order is not pending."
+    },
+    {
+      "code": 6009,
+      "name": "UserOrderAlreadyFilled",
+      "msg": "User order already filled."
+    },
+    {
+      "code": 6010,
+      "name": "UserOrderNotFilled",
+      "msg": "User order details missing."
+    },
+    {
+      "code": 6011,
+      "name": "InvalidOrder",
+      "msg": "Invalid order."
+    },
+    {
+      "code": 6012,
+      "name": "MatchIdMismatch",
+      "msg": "Match id mismatch."
+    },
+    {
+      "code": 6013,
+      "name": "TooManyMatches",
+      "msg": "max_matches exceeds MAX_MATCHES_PER_TRIGGER."
+    },
+    {
+      "code": 6014,
+      "name": "NoMatches",
+      "msg": "No matches available."
+    }
+  ],
+  "types": [
+    {
+      "name": "AccountType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Orderbook",
+            "fields": [
+              {
+                "name": "market",
+                "type": "pubkey"
+              }
+            ]
+          },
+          {
+            "name": "UserOrder",
+            "fields": [
+              {
+                "name": "market",
+                "type": "pubkey"
+              },
+              {
+                "name": "user",
+                "type": "pubkey"
+              },
+              {
+                "name": "ticket_id",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "MatchedOrder",
+            "fields": [
+              {
+                "name": "market",
+                "type": "pubkey"
+              },
+              {
+                "name": "match_id",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "StubTicket",
+            "fields": [
+              {
+                "name": "ticket_id",
+                "type": "u64"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "L1OrderTicket",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ticket_id",
+            "type": "u64"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "user_enc_pubkey",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "order_commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "buyer_ticket_id",
+            "type": "u64"
+          },
+          {
+            "name": "seller_ticket_id",
+            "type": "u64"
+          },
+          {
+            "name": "quantity",
+            "type": "u64"
+          },
+          {
+            "name": "execution_price",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchRoundPublishedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "match_id",
+            "type": "u64"
+          },
+          {
+            "name": "match_count",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchedOrder",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "match_id",
+            "type": "u64"
+          },
+          {
+            "name": "matches",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "MatchEntry"
+                }
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Member",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "flags",
+            "type": "u8"
+          },
+          {
+            "name": "pubkey",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ticket_id",
+            "type": "u64"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "remaining",
+            "type": "u64"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "active",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderbookState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "relayer",
+            "type": "pubkey"
+          },
+          {
+            "name": "bids",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "OrderEntry"
+                }
+              }
+            }
+          },
+          {
+            "name": "asks",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "OrderEntry"
+                }
+              }
+            }
+          },
+          {
+            "name": "last_match_id",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserOrder",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "ticket_id",
+            "type": "u64"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "salt",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserOrderCreatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ticket_id",
+            "type": "u64"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserOrderRecordedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ticket_id",
+            "type": "u64"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          }
+        ]
+      }
+    }
+  ]
+}

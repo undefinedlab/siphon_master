@@ -1,0 +1,499 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap");
+
+.three-effect-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: #000000;
+  overflow: hidden;
+  font-family: "Arial", sans-serif;
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card-stream {
+  position: absolute;
+  width: 100%;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+  top: 37%;
+  transform: translateY(-50%);
+}
+
+.card-line {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.card-line.css-animated {
+  animation: scrollCards 40s linear infinite;
+}
+
+@keyframes scrollCards {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.card-wrapper {
+  position: relative;
+  width: 400px;
+  height: 260px;
+  flex-shrink: 0;
+  opacity: 0.92;
+  transition: opacity 2.5s ease-out;
+}
+
+.card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 260px;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.card-normal {
+  background: transparent;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+  color: var(--build-ui-text);
+  z-index: 2;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  filter: brightness(1.1) contrast(1.1);
+  box-shadow: 
+    inset 0 0 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.card-image:hover {
+  filter: brightness(1.2) contrast(1.2);
+}
+
+.strategy-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 30px;
+  height: 100%;
+  box-sizing: border-box;
+  z-index: 3;
+  position: relative;
+  width: 100%;
+}
+
+.strategy-name {
+  font-size: 42px;
+  font-weight: bold;
+  color: var(--build-ui-text);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  font-family: "Arial", sans-serif;
+}
+
+.strategy-description {
+  font-size: 14px;
+  color: var(--build-ui-text);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  margin-bottom: auto;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 500;
+}
+
+.strategy-stats {
+  display: flex;
+  gap: 20px;
+  margin-top: auto;
+}
+
+.strategy-stat {
+  color: var(--build-ui-text);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  line-height: 1.4;
+}
+
+.card-ascii {
+  background: transparent;
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 260px;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.card-chip {
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  border-radius: 5px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.card-chip::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  background: linear-gradient(45deg, #e6c200, #f4d03f);
+  border-radius: 2px;
+}
+
+.contactless {
+  position: absolute;
+  top: 60px;
+  left: 20px;
+  width: 25px;
+  height: 25px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent);
+}
+
+.contactless::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 15px;
+  height: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+}
+
+.card-number {
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  margin-bottom: 15px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.card-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.card-holder {
+  color: var(--build-ui-text);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.card-expiry {
+  color: var(--build-ui-text);
+  font-size: 14px;
+}
+
+.card-logo {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--build-ui-text);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.ascii-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--build-ui-text-muted);
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  line-height: 13px;
+  overflow: hidden;
+  white-space: pre;
+  clip-path: inset(0 calc(100% - var(--clip-left, 0%)) 0 0);
+  animation: glitch 0.1s infinite linear alternate-reverse;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  vertical-align: top;
+  box-sizing: border-box;
+  transition: color 0.2s ease;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.8) 30%,
+    rgba(0, 0, 0, 0.6) 50%,
+    rgba(0, 0, 0, 0.4) 80%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.8) 30%,
+    rgba(0, 0, 0, 0.6) 50%,
+    rgba(0, 0, 0, 0.4) 80%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+}
+
+/* Removed color/transparency changes after scanning - cards remain the same */
+
+@keyframes glitch {
+  0% {
+    opacity: 1;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  16% {
+    opacity: 1;
+  }
+  49% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  99% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.scanner {
+  display: none;
+  position: absolute;
+  left: calc(50% + 65px);
+  top: 37%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 300px;
+  border-radius: 30px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0, 255, 255, 0.8),
+    rgba(0, 255, 255, 1),
+    rgba(0, 255, 255, 0.8),
+    transparent
+  );
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.4);
+  animation: scanPulse 2s ease-in-out infinite alternate;
+  z-index: 10;
+}
+
+@keyframes scanPulse {
+  0% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scaleY(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scaleY(1.1);
+  }
+}
+
+.scanner-label {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(0, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.card-normal {
+  clip-path: inset(0 0 0 var(--clip-right, 0%));
+  transition: clip-path 1.2s ease-out;
+}
+
+.card-ascii {
+  clip-path: inset(0 calc(100% - var(--clip-left, 0%)) 0 0);
+  transition: clip-path 1.2s ease-out;
+}
+
+.card-wrapper {
+  transition: opacity 2.5s ease-out;
+}
+
+.scan-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 255, 0.4),
+    rgba(139, 92, 246, 0.4),
+    transparent
+  );
+  animation: scanEffect 0.6s ease-out;
+  pointer-events: none;
+  z-index: 5;
+  border-radius: 15px;
+}
+
+@keyframes scanEffect {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.instructions {
+  position: absolute;
+  top: 50%;
+  right: 30px;
+  transform: translateY(-50%);
+  color: var(--build-ui-text-muted);
+  font-size: 14px;
+  max-width: 200px;
+  text-align: right;
+  z-index: 5;
+}
+
+#particleCanvas {
+  position: absolute;
+  top: 37%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  max-width: 100%;
+  height: 250px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#scannerCanvas {
+  position: absolute;
+  top: 37%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 300px;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.inspiration-credit {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Roboto Mono", monospace;
+  font-size: 12px;
+  font-weight: 900;
+  color: #ff9a9c;
+  z-index: 1000;
+  text-align: center;
+}
+
+.inspiration-credit a {
+  color: #ff9a9c;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.inspiration-credit a:hover {
+  color: #ff7a7c;
+}
+
+/* Mobile styles */
+@media (max-width: 480px) {
+  .scanner {
+    position: absolute;
+    left: calc(50% - 72px);
+    top: 37%;
+    width: 6px; /* Make bigger (was 4px) */
+    height: 350px; /* Make bigger (was 300px) */
+    animation: scanPulseMobile 2s ease-in-out infinite alternate;
+    transform: translateY(-50%);
+    z-index: 15;
+  }
+
+  #scannerCanvas {
+    position: absolute;
+    left: 0;
+    top: 37%;
+    transform: translateY(-50%);
+    width: 100%;
+    height: 350px; /* Make bigger (was 300px) */
+    z-index: 15;
+    pointer-events: none;
+  }
+}
+
+@keyframes scanPulseMobile {
+  0% {
+    opacity: 0.8;
+    transform: translateY(-50%) scaleY(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-50%) scaleY(1.1);
+  }
+}
+

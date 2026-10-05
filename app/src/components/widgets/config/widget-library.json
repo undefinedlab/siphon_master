@@ -1,0 +1,155 @@
+{
+  "$schema": "./widget-library.schema.json",
+  "version": 1,
+  "grid": {
+    "desktopColumns": 6,
+    "desktopRowsPerPage": 3,
+    "mobileColumns": 2,
+    "mobileRowsPerPage": 4,
+    "sizeUnits": "WxH maps to grid column-span × row-span on the desktop 6-column grid"
+  },
+  "sizePresets": {
+    "1x1": { "col": 1, "row": 1, "label": "1×1 glance" },
+    "1x2": { "col": 1, "row": 2, "label": "1×2 tall" },
+    "2x1": { "col": 2, "row": 1, "label": "2×1 wide" },
+    "2x2": { "col": 2, "row": 2, "label": "2×2 standard" },
+    "4x2": { "col": 4, "row": 2, "label": "4×2 hero" },
+    "6x1": { "col": 6, "row": 1, "label": "6×1 banner" },
+    "6x2": { "col": 6, "row": 2, "label": "6×2 full width" }
+  },
+  "widgets": {
+    "fear-greed": {
+      "label": "Fear & Greed",
+      "hint": "Sentiment gauge",
+      "tier": "starter",
+      "defaultSize": "1x1",
+      "allowedSizes": ["1x1", "1x2", "2x2"],
+      "resizable": false,
+      "component": "FearGreedWidget",
+      "description": "Alternative.me fear & greed index. Default compact 1×1 glance tile."
+    },
+    "market-cap": {
+      "label": "Market cap",
+      "hint": "Total crypto cap",
+      "tier": "starter",
+      "defaultSize": "1x1",
+      "allowedSizes": ["1x1", "1x2", "2x2"],
+      "resizable": false,
+      "component": "MarketCapWidget",
+      "description": "Global crypto market capitalization with 24h direction sparkline."
+    },
+    "market-volume": {
+      "label": "24h volume",
+      "hint": "Total market volume",
+      "tier": "starter",
+      "defaultSize": "1x1",
+      "allowedSizes": ["1x1", "1x2", "2x2"],
+      "resizable": false,
+      "component": "MarketVolumeWidget",
+      "description": "Aggregate 24h trading volume across tracked markets."
+    },
+    "dominance": {
+      "label": "Dominance",
+      "hint": "BTC & ETH share",
+      "tier": "starter",
+      "defaultSize": "1x1",
+      "allowedSizes": ["1x1", "1x2", "2x2"],
+      "resizable": false,
+      "component": "DominanceWidget",
+      "description": "Bitcoin and Ethereum market cap dominance."
+    },
+    "news": {
+      "label": "News",
+      "hint": "Headlines",
+      "tier": "glance",
+      "defaultSize": "2x1",
+      "allowedSizes": ["2x1", "2x2", "4x2"],
+      "resizable": true,
+      "component": "NewsWidget",
+      "description": "Rotating headline glance; scales wider for more copy."
+    },
+    "swap": {
+      "label": "Swap",
+      "hint": "Quick token swap",
+      "tier": "core",
+      "defaultSize": "1x2",
+      "allowedSizes": ["1x1", "1x2", "2x2", "4x2"],
+      "resizable": true,
+      "component": "SwapPanel",
+      "description": "Compact pay / receive swap. Default 1×2 tall tile."
+    },
+    "runs": {
+      "label": "Runs",
+      "hint": "Active strategies",
+      "tier": "core",
+      "defaultSize": "1x2",
+      "allowedSizes": ["1x1", "1x2", "2x1", "2x2"],
+      "resizable": true,
+      "component": "RunsPanel",
+      "description": "Live running strategies with elapsed time. Default 1×2 tall tile."
+    },
+    "predictions": {
+      "label": "Private Markets",
+      "hint": "Polymarket, privately",
+      "tier": "core",
+      "defaultSize": "1x2",
+      "allowedSizes": ["1x1", "1x2", "2x1", "2x2"],
+      "resizable": true,
+      "component": "PredictionsPanel",
+      "description": "Live Polymarket markets teaser; opens the private-markets page. Default 1×2 tile.",
+      "comingSoon": true
+    },
+    "coins": {
+      "label": "Coins",
+      "hint": "Top assets & views",
+      "tier": "core",
+      "defaultSize": "2x2",
+      "allowedSizes": ["2x2", "4x2", "6x2"],
+      "resizable": true,
+      "component": "TopCoinsPanel",
+      "description": "Top movers and market table."
+    },
+    "opportunities": {
+      "label": "Strategies",
+      "hint": "Strategy library",
+      "tier": "core",
+      "defaultSize": "2x2",
+      "allowedSizes": ["1x2", "2x2", "4x2", "6x2"],
+      "resizable": true,
+      "component": "StrategiesPanel",
+      "description": "Browse and load strategy templates into the builder."
+    },
+    "wallet": {
+      "label": "Wallet",
+      "hint": "Vault balance",
+      "tier": "core",
+      "defaultSize": "2x1",
+      "allowedSizes": ["2x1", "2x2", "4x2"],
+      "resizable": true,
+      "component": "WalletPanel",
+      "description": "Connected wallet with ETH / USDC vault balances."
+    },
+    "chart": {
+      "label": "Chart",
+      "hint": "TradingView",
+      "tier": "core",
+      "defaultSize": "2x2",
+      "allowedSizes": ["2x2", "4x2", "6x2"],
+      "resizable": true,
+      "component": "TradingViewWidget",
+      "description": "Live TradingView advanced chart with symbol switcher."
+    }
+  },
+  "defaultLayout": [
+    { "kind": "fear-greed", "size": "1x1" },
+    { "kind": "market-cap", "size": "1x1" },
+    { "kind": "market-volume", "size": "1x1" },
+    { "kind": "dominance", "size": "1x1" },
+    { "kind": "news", "size": "2x1" },
+    { "kind": "coins", "size": "2x2", "anchorId": "movers" },
+    { "kind": "opportunities", "size": "2x2", "anchorId": "strategies" },
+    { "kind": "swap", "size": "1x2" },
+    { "kind": "runs", "size": "1x2" }
+  ],
+  "starterKinds": ["fear-greed", "market-cap", "market-volume", "dominance"]
+}

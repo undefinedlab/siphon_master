@@ -1,0 +1,1196 @@
+@import "tailwindcss";
+
+:root {
+  --build-page-bg: #000000;
+  --build-page-overlay: rgba(0, 0, 0, 0.97);
+  --build-ai-composer-bg: rgba(0, 0, 0, 0.28);
+  --build-ai-composer-border: transparent;
+  --build-ai-composer-inset: rgba(255, 255, 255, 0.06);
+  --build-ai-input-border: rgba(255, 255, 255, 0.12);
+  --build-ai-input-border-focus: rgba(255, 255, 255, 0.22);
+  --build-ai-input-bg: rgba(255, 255, 255, 0.04);
+  --build-ai-input-bg-focus: rgba(255, 255, 255, 0.08);
+  --build-ai-input-text: rgba(255, 255, 255, 0.94);
+  --build-ai-input-placeholder: rgba(255, 255, 255, 0.38);
+  --build-ai-widgets-btn-border: rgba(255, 255, 255, 0.18);
+  --build-ai-widgets-btn-border-hover: rgba(255, 255, 255, 0.28);
+  --build-ai-widgets-btn-border-active: rgba(255, 255, 255, 0.42);
+  --build-ai-widgets-btn-bg: rgba(0, 0, 0, 0.42);
+  --build-ai-widgets-btn-bg-hover: rgba(255, 255, 255, 0.1);
+  --build-ai-widgets-btn-text: rgba(255, 255, 255, 0.88);
+  --build-ai-disclaimer-text: rgba(255, 255, 255, 0.38);
+  --build-ai-thread-bg: rgba(0, 0, 0, 0.22);
+  --build-ai-icon-btn-border: rgba(255, 255, 255, 0.18);
+  --build-ai-icon-btn-border-hover: rgba(255, 255, 255, 0.28);
+  --build-ui-text: rgba(255, 255, 255, 0.94);
+  --build-ui-text-muted: rgba(255, 255, 255, 0.55);
+  --build-ui-text-subtle: rgba(255, 255, 255, 0.38);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+:root {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: clip;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  color: var(--build-ui-text, rgba(255, 255, 255, 0.94));
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  background: var(--build-page-bg, #000000);
+  color: var(--build-ui-text, rgba(255, 255, 255, 0.94));
+  font-family: var(--font-source-code), monospace;
+  overflow-x: clip;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.dapp-main-container,
+.dapp-container,
+.dapp-nav-chrome {
+  color: inherit;
+}
+
+.dapp-main-container :where(p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, button, a, input, textarea, select) {
+  color: inherit;
+}
+
+.dapp-main-container svg {
+  color: inherit;
+}
+
+[data-sensitive] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Hide scrollbar for all browsers */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ghost scrollbar: near-invisible at rest so it never clutters the pure-black layout, and only
+   fades in when you actually interact with a scroll container (hover). Ultra-thin, transparent
+   track, hairline pill. Keeps the affordance without adding a loud grey bar to the design.
+   (The html/body rules above still fully HIDE the page-level scrollbar.) */
+* {
+  scrollbar-width: thin;                                   /* Firefox */
+  scrollbar-color: transparent transparent;                /* invisible until :hover below */
+}
+*:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;  /* Firefox: reveal on hover */
+}
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* Thumb is invisible at rest; fades in only when the scroll container is hovered. */
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+  transition: background 160ms ease;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+}
+*:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+h1 {
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+p {
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+nav {
+  position: fixed;
+  top: 15px;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 2em 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0px;
+  z-index: 1100;
+  box-sizing: border-box;
+  overflow: visible;
+  color: var(--build-ui-text);
+}
+
+.nav-container {
+  max-width: 1200px;
+  width: 100%;
+  padding-left: 5em;
+  padding-right: 5em;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0px;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive nav container padding to match hero */
+@media (max-width: 1024px) {
+  .nav-container {
+    padding-left: 2em;
+    padding-right: 2em;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-container {
+    padding-left: 2em;
+    padding-right: 2em;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-container {
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+  }
+}
+
+/* Dapp shell — align header + content to the same max column */
+.dapp-main-container {
+  width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+/* Override nav positioning when inside dapp-main-container */
+.dapp-main-container nav {
+  position: sticky;
+  top: 15px;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 2em 1.5rem;
+  box-sizing: border-box;
+  margin-top: 0;
+  background: transparent;
+  z-index: 10050;
+  overflow: visible;
+}
+
+/* Nav lines up with content column inside the dapp shell */
+.dapp-main-container nav .nav-container {
+  max-width: 100%;
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.nav-center {
+  position: static;
+  transform: none;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.nav-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 0.5rem;
+}
+
+.nav-single-btn {
+  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: var(--build-ui-text-muted);
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.nav-single-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.nav-single-btn:hover {
+  color: var(--build-ui-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-single-btn.active {
+  color: var(--build-ui-text);
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+}
+
+.nav-single-btn-disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5;
+  overflow: visible;
+  position: relative;
+  pointer-events: auto;
+}
+
+.nav-single-btn-disabled:hover {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+.nav-single-btn-disabled:hover .nav-single-btn-content {
+  filter: blur(4px);
+  opacity: 0.3;
+}
+
+.nav-single-btn-disabled:hover .nav-soon-tag {
+  opacity: 1;
+  visibility: visible;
+}
+
+.nav-single-btn-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.nav-soon-tag {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 7px;
+  padding: 2px 5px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  color: var(--build-ui-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.nav-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.nav-wallet {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.nav-wallet .top-connect-button {
+  pointer-events: auto;
+}
+
+.nav-profile-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 0.75rem;
+}
+
+.nav-profile-menu--compact .nav-profile-trigger {
+  padding: 0.45rem;
+  min-width: 36px;
+  justify-content: center;
+}
+
+.nav-profile-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.45rem 0.75rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-profile-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  min-width: 10rem;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.35rem;
+  z-index: 10060;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.nav-profile-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.nav-profile-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-items {
+  display: flex;
+  align-items: center;
+  gap: 2em;
+}
+
+.nav-mode-selector {
+  display: flex;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.nav-mode-btn {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: var(--build-ui-text-muted);
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.nav-mode-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.nav-mode-btn:hover {
+  color: var(--build-ui-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-mode-btn.active {
+  color: var(--build-ui-text);
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+}
+
+button {
+  outline: none;
+  border: 2px solid var(--build-ui-text);
+  border-radius: 2em;
+  color: var(--build-ui-text);
+  background-color: transparent;
+  font-family: var(--font-source-code), monospace;
+  font-size: 15px;
+  padding: 0.5em 1em;
+}
+
+footer {
+  display: none; /* Hidden - removed bottom left and right angle content */
+}
+
+footer h1 {
+  width: 40%;
+}
+
+.footer-left {
+  text-align: left;
+}
+
+.footer-links {
+  justify-content: center;
+  align-items: center;
+  text-align: right;
+  gap: 2em;
+}
+
+/* Footer responsive styles */
+@media (max-width: 768px) {
+  .dapp-main-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  nav {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.75rem;
+    padding: 1em 1.5em;
+    position: fixed;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+
+  .dapp-main-container nav {
+    padding-top: max(1.75rem, calc(env(safe-area-inset-top, 0px) + 1.15rem));
+    padding-bottom: 0.85em;
+    padding-left: clamp(1.5rem, 8.5vw, 2.25rem);
+    padding-right: clamp(1.5rem, 8.5vw, 2.25rem);
+    /* Keep nav in flow on mobile — `nav { position:fixed }` above would collapse the
+       content pane and clip UserDash short of the real viewport. */
+    position: relative;
+    top: auto;
+  }
+
+  /* Ensure nav-container doesn't interfere with grid */
+  nav .nav-container {
+    display: contents; /* Makes children direct grid items */
+  }
+
+  /* First row: Logo left, Wallet right */
+  .logo {
+    grid-row: 1;
+    grid-column: 1;
+    justify-self: start;
+    align-self: center;
+  }
+
+  .nav-right {
+    grid-row: 1;
+    grid-column: 1;
+    justify-self: end;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  .nav-right .nav-mode-selector {
+    display: flex;
+    gap: 0;
+    background: rgba(255, 255, 255, 0.00);
+    border: none;
+    border-radius: 6px;
+    padding: 0.15rem;
+  }
+
+  .nav-right .nav-mode-btn {
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    margin: 0;
+  }
+
+  .nav-wallet {
+    grid-row: 1;
+    grid-column: 1;
+    justify-self: end;
+    align-self: center;
+    width: auto;
+    margin-left: 0;
+  }
+
+  .nav-wallet .top-connect-button {
+    border: none;
+    width: auto;
+  }
+
+  .nav-wallet .wallet-selector {
+    width: auto;
+  }
+
+  .nav-wallet .wallet-selector-trigger {
+    width: auto;
+    font-size: 13px;
+    padding: 0.62rem 1rem;
+    min-height: 2.5rem;
+    border-radius: 8px;
+    letter-spacing: 0.06em;
+  }
+
+  .nav-wallet .wallet-connected-button {
+    padding: 0.62rem 1rem;
+    min-height: 2.5rem;
+    border-radius: 8px;
+  }
+
+  .nav-wallet .wallet-balance-text {
+    font-size: 13px;
+  }
+
+  .nav-wallet .dropdown-arrow {
+    font-size: 11px;
+  }
+
+  /* Second row: Discover, Build, Run only */
+  .nav-center {
+    grid-row: 2;
+    grid-column: 1;
+    position: static;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+
+  /* Hide darkpools, swap, dividers, and docs on mobile */
+  .nav-center .nav-single-btn:nth-of-type(1),
+  .nav-center .nav-single-btn:nth-of-type(2),
+  .nav-center .nav-divider,
+  .nav-center .nav-mode-btn[href="/docs"] {
+    display: none !important;
+  }
+
+  /* Show only the Discover/Build/Run selector */
+  .nav-center .nav-mode-selector {
+    display: flex !important;
+    gap: 0.5rem;
+    width: auto;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .nav-center .nav-mode-btn {
+    flex-shrink: 0;
+  }
+
+  footer {
+    padding: 1.5em;
+  }
+
+  .footer-left {
+    text-align: left;
+  }
+
+  .footer-links {
+    text-align: right;
+  }
+
+  footer p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  footer {
+    padding: 1em;
+  }
+
+  footer p {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .footer-left {
+    text-align: left;
+  }
+
+  .footer-links {
+    text-align: right;
+  }
+}
+
+.nav-link {
+  color: var(--build-ui-text);
+  text-decoration: none;
+  font-family: var(--font-source-code), monospace;
+  font-size: 15px;
+  transition: opacity 0.2s ease;
+}
+
+.nav-link:hover {
+  opacity: 0.7;
+}
+
+/* Legacy nav-link styling - keeping for backwards compatibility */
+
+.about-link {
+  position: fixed;
+  top: 2em;
+  right: 2em;
+  z-index: 1101;
+}
+
+.logo {
+  width: 100%;
+}
+
+.dapp-main-container nav .nav-container:has(.nav-profile-menu) .logo {
+  width: auto;
+  flex-shrink: 0;
+}
+
+.logo-link {
+  color: var(--build-ui-text);
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.logo-link:hover {
+  opacity: 0.8;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-svg {
+  flex-shrink: 0;
+}
+
+
+canvas:not(#particleCanvas):not(#scannerCanvas) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100vh;
+}
+
+/* Spinner animation for loading states */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Wallet Connect Button - Simplified Styles */
+.wallet-selector {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: auto;
+  z-index: 2;
+}
+
+.nav-wallet {
+  position: relative;
+  overflow: visible;
+}
+
+.wallet-selector-trigger {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.wallet-selector-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.wallet-icon {
+  display: none;
+}
+
+.wallet-text {
+  flex: 1;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.wallet-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  left: auto;
+  min-width: 100%;
+  width: max-content;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.4rem;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.wallet-dropdown-portal {
+  /* legacy — dropdown is anchored to trigger */
+}
+
+.wallet-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.wallet-option {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 0.5rem 0.65rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.wallet-option:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.wallet-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wallet-option-icon {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+}
+
+.wallet-option-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.wallet-option-name {
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wallet-option-icon {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+  min-width: 20px;
+  text-align: center;
+}
+
+.wallet-option-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.wallet-option-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--build-ui-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Connected Wallet Styles */
+.wallet-container {
+  position: relative;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.wallet-container--menu .wallet-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 10rem;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.35rem;
+  z-index: 10060;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.wallet-profile-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.wallet-profile-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.wallet-content-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wallet-balance {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.wallet-balance-clickable {
+  transition: all 0.2s ease;
+}
+
+.wallet-balance-clickable:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+}
+
+.wallet-profile-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--build-ui-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallet-profile-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.wallet-connected-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: var(--build-ui-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wallet-connected-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.wallet-info-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wallet-balance-text {
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.wallet-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem;
+  min-width: 200px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.wallet-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.wallet-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.wallet-menu-label {
+  color: var(--build-ui-text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wallet-menu-value {
+  color: var(--build-ui-text);
+  font-weight: 500;
+}
+
+.wallet-menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.5rem 0;
+}
+
+.wallet-menu-disconnect {
+  color: rgba(239, 68, 68, 0.9);
+}
+
+.wallet-menu-disconnect:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: rgba(239, 68, 68, 1);
+}
+
+.disconnect-text {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 11px;
+}
+
+/* ── Fit the desktop layout on smaller laptops ──────────────────────────────────
+   The desktop design targets ~1920px-wide screens, so on narrower laptops it looks
+   oversized at 100% browser zoom (you'd otherwise drop to ~75% to see it all). Scale
+   the whole UI down progressively below 1600px so everything is visible at 100%.
+   Large monitors (>1600px) are unaffected; mobile breakpoints (<768px) still apply.
+   `zoom` reflows correctly (unlike transform: scale) and keeps the fixed nav/canvas aligned.
+
+   React Flow mixes offsetWidth with getBoundingClientRect for handle math — page-level
+   zoom breaks edge anchors. On the builder, keep html at 1:1 and zoom chrome only.
+   Never zoom `.dapp-main-container` — the React Flow canvas lives inside it. */
+:root {
+  --ui-zoom: 1;
+}
+
+@media (max-width: 1600px) {
+  html {
+    zoom: 0.85;
+    --ui-zoom: 0.85;
+  }
+}
+@media (max-width: 1440px) {
+  html {
+    zoom: 0.78;
+    --ui-zoom: 0.78;
+  }
+}
+@media (max-width: 1280px) {
+  html {
+    zoom: 0.7;
+    --ui-zoom: 0.7;
+  }
+}
+
+html:has(.blueprint-view--fullscreen) {
+  zoom: 1;
+}
+
+@media (max-width: 1600px) {
+  html:has(.blueprint-view--fullscreen) .dapp-nav-chrome,
+  html:has(.blueprint-view--fullscreen) .blueprint-workspace > :not(.blueprint-stage),
+  html:has(.blueprint-view--fullscreen) .blueprint-stage > :not(.blueprint-canvas) {
+    zoom: 0.85;
+  }
+}
+@media (max-width: 1440px) {
+  html:has(.blueprint-view--fullscreen) .dapp-nav-chrome,
+  html:has(.blueprint-view--fullscreen) .blueprint-workspace > :not(.blueprint-stage),
+  html:has(.blueprint-view--fullscreen) .blueprint-stage > :not(.blueprint-canvas) {
+    zoom: 0.78;
+  }
+}
+@media (max-width: 1280px) {
+  html:has(.blueprint-view--fullscreen) .dapp-nav-chrome,
+  html:has(.blueprint-view--fullscreen) .blueprint-workspace > :not(.blueprint-stage),
+  html:has(.blueprint-view--fullscreen) .blueprint-stage > :not(.blueprint-canvas) {
+    zoom: 0.7;
+  }
+}
+
+/* Discover / modal previews still use page zoom — compensate their React Flow layer. */
+html:not(:has(.blueprint-view--fullscreen)) .strategy-preview-flow {
+  zoom: calc(1 / var(--ui-zoom));
+}
+
+/* WalletConnect / reown AppKit connect modal.
+   reown ships w3m-modal at z-index 999, but the dapp UI sits in a fixed overlay at z-index 1000
+   (dapp/page.tsx) with the nav at 10050 — so on mobile the "All Wallets" sheet opened BEHIND the
+   page and bled through the dashboard (unreadable). Force it above every app layer. Verified via
+   headless render that this turns the ghosted overlap into a clean bottom-sheet with a dimmed
+   backdrop. Tag variants cover current + future reown element names. */
+:root {
+  --w3m-z-index: 2147483000;
+}
+w3m-modal,
+wcm-modal,
+appkit-modal {
+  z-index: 2147483000 !important;
+}

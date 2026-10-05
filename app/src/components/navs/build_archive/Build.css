@@ -1,0 +1,130 @@
+/* Blueprint View - Minimal */
+.blueprint-view {
+  width: calc(100% - 3rem);
+  height: 100%;
+  max-height: calc(100vh - 140px);
+  margin: 0.35rem 1.5rem 0.5rem 1.5rem;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.blueprint-workspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  gap: 0.75rem;
+}
+
+.blueprint-canvas {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.blueprint-canvas .react-flow {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.blueprint-canvas .react-flow__renderer {
+  width: 100%;
+  height: 100%;
+}
+
+.blueprint-view.loaded {
+  opacity: 1;
+}
+
+/* Mobile: Move component lower to avoid overlap with SwapNav */
+@media (max-width: 768px) {
+  .blueprint-view {
+    margin-top: 0.5rem;
+  }
+
+  .blueprint-workspace {
+    gap: 0.5rem;
+  }
+}
+
+.blueprint-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.toolbar-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--build-ui-text);
+  cursor: pointer;
+  font-family: var(--font-source-code), monospace;
+  font-size: 12px;
+}
+
+.toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* React Flow Controls Styling */
+.blueprint-canvas .react-flow__panel.react-flow__controls {
+  margin: 12px;
+  background: rgba(0, 0, 0, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  overflow: hidden;
+}
+
+.blueprint-canvas .react-flow__controls-button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  fill: rgba(255, 255, 255, 0.9) !important;
+}
+
+.blueprint-canvas .react-flow__controls-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  fill: white !important;
+}
+
+/* React Flow MiniMap Styling */
+.blueprint-canvas .react-flow__panel.react-flow__minimap {
+  margin: 12px;
+  background: rgba(0, 0, 0, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 6px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.blueprint-canvas .react-flow__minimap-svg {
+  display: block;
+}
+
+.blueprint-canvas .react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.55) !important;
+  stroke: rgba(255, 255, 255, 0.35) !important;
+  stroke-width: 1px !important;
+}
+
+.blueprint-canvas .react-flow__minimap-node {
+  fill: rgba(255, 255, 255, 0.35) !important;
+  stroke: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Hide React Flow Attribution */
+.blueprint-view .react-flow__attribution {
+  display: none !important;
+}

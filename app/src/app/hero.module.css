@@ -1,0 +1,166 @@
+.heroContainer {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  z-index: 3;
+  pointer-events: none;
+  font-family: 'Source Code Pro', monospace;
+  padding: 4em 5em;
+  padding-top: 650px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.landingHero {
+  padding-top: 480px;
+}
+
+.heroTagline {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #ffffff;
+  margin: 0;
+  font-family: 'Source Code Pro', monospace;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  max-width: 800px;
+}
+
+.heroTitle {
+  font-size: 200px;
+  font-weight: bold;
+  line-height: 1;
+  color: #ffffff;
+  margin: 0;
+  font-family: 'Source Code Pro', monospace;
+}
+
+.heroSubtitle {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  margin-left: 10px;
+  margin-top: 1rem;
+  font-family: 'Source Code Pro', monospace;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+}
+
+.landingHero .heroSubtitle {
+  margin-left: 0;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+  max-width: none;
+  white-space: nowrap;
+}
+
+.heroTextContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  opacity: 0;
+  animation: heroTextFadeIn 0.75s ease 0.1s forwards;
+}
+
+@keyframes heroTextFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.logo {
+  flex-shrink: 0;
+  width: 120px;
+  height: 98px;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .heroContainer {
+    padding-top: 30vh;
+    padding-left: 2em;
+    padding-right: 2em;
+  }
+
+  .landingHero {
+    padding-top: 28vh;
+  }
+
+  .heroTagline {
+    font-size: 48px;
+  }
+
+  .heroSubtitle {
+    font-size: 18px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .heroContainer {
+    padding: 3em clamp(1.25rem, 5vw, 1.5em);
+    padding-top: 70vh;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .landingHero {
+    padding-top: 52vh;
+  }
+
+  .landingHero .heroSubtitle {
+    white-space: normal;
+  }
+
+  .heroTagline {
+    font-size: 36px;
+    max-width: 100%;
+  }
+
+  .heroSubtitle {
+    font-size: 16px;
+    margin-top: 0.75rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .heroContainer {
+    padding: 2em clamp(1.15rem, 4.5vw, 1.35em);
+    padding-top: 70vh;
+  }
+
+  .landingHero {
+    padding-top: 48vh;
+  }
+
+  .heroTagline {
+    font-size: 30px;
+    max-width: 100%;
+  }
+
+  .heroSubtitle {
+    font-size: 14px;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroTextContainer {
+    animation: none;
+    opacity: 1;
+  }
+}
+

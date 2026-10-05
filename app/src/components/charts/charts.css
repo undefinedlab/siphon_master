@@ -1,0 +1,52 @@
+.strategy-chart-legend {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 3;
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9aa0a6;
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.strategy-chart-legend .up {
+  color: #26a69a;
+}
+
+.strategy-chart-legend .down {
+  color: #ef5350;
+}
+
+.strategy-chart-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #9aa0a6;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.strategy-chart-overlay.error {
+  color: #ef5350;
+}
+
+.strategy-chart-stale {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 3;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9aa0a6;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 7px;
+  border-radius: 6px;
+  pointer-events: none;
+}

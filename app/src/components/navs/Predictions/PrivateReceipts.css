@@ -1,0 +1,47 @@
+.rc-wrap { margin-top: 20px; }
+.rc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.rc-title { font-size: 15px; font-weight: 640; color: #e8ebf0; letter-spacing: -0.01em; }
+.rc-head-actions { display: flex; gap: 8px; align-items: center; }
+.rc-refresh { background: transparent; border: 1px solid #2a3140; color: #98a2b2; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; }
+.rc-refresh:hover { color: #e8ebf0; border-color: #3a4356; }
+.rc-new { background: #b08a2f; color: #12131a; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 640; font-size: 13px; cursor: pointer; }
+.rc-new:hover { background: #c6a15b; }
+
+.rc-empty { color: #8a94a3; font-size: 13.5px; line-height: 1.5; border: 1px dashed #2a3140; border-radius: 12px; padding: 20px; max-width: 60ch; }
+
+.rc-list { display: flex; flex-direction: column; gap: 10px; }
+.rc-row { background: #171c26; border: 1px solid #232b37; border-radius: 12px; padding: 14px 16px; }
+.rc-row-main { display: flex; align-items: center; gap: 10px; }
+.rc-amt { font-size: 15px; font-weight: 680; color: #e8ebf0; font-variant-numeric: tabular-nums; }
+.rc-kind { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 100px; font-weight: 600; }
+.rc-kind--withdraw { color: #7fa0ce; border: 1px solid #33465e; }
+.rc-kind--deposit { color: #5fb07a; border: 1px solid #2c4a38; }
+.rc-stamp { margin-left: auto; font-size: 11px; color: #c6a15b; font-family: ui-monospace, monospace; }
+.rc-row-sub { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 7px; font-size: 12px; color: #8a94a3; font-family: ui-monospace, monospace; }
+.rc-row-actions { display: flex; gap: 8px; margin-top: 12px; }
+.rc-row-actions button { background: transparent; border: 1px solid #2a3140; color: #cad1dc; padding: 6px 12px; border-radius: 8px; font-size: 12.5px; cursor: pointer; }
+.rc-row-actions button:hover { border-color: #7fa0ce; color: var(--build-ui-text); }
+.rc-row-actions button:disabled { opacity: 0.5; cursor: default; }
+
+.rc-modal-bg { position: fixed; inset: 0; background: rgba(6, 8, 12, 0.72); display: grid; place-items: center; z-index: 1000; padding: 20px; }
+.rc-modal { background: #12141b; border: 1px solid #262c38; border-radius: 16px; width: min(680px, 100%); max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; }
+.rc-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid #232b37; font-weight: 640; color: #e8ebf0; }
+.rc-x { background: transparent; border: none; color: #98a2b2; font-size: 22px; cursor: pointer; line-height: 1; }
+.rc-modal-body { padding: 18px 22px; overflow-y: auto; }
+/* Scrollbar inherits the app-wide designed style from globals.css (slim translucent pill). */
+.rc-sec { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #c6a15b; font-weight: 600; margin: 16px 0 10px; }
+.rc-sec:first-child { margin-top: 0; }
+.rc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rc-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #98a2b2; }
+.rc-grid label.rc-wide { grid-column: 1 / -1; }
+.rc-grid input, .rc-grid select { background: #0d0f15; border: 1px solid #2a3140; border-radius: 8px; padding: 9px 11px; color: #e8ebf0; font-size: 13px; font-family: inherit; }
+.rc-grid input:focus, .rc-grid select:focus { outline: none; border-color: #7fa0ce; }
+.rc-modal-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 22px; border-top: 1px solid #232b37; }
+.rc-note { font-size: 11.5px; color: #6f7889; max-width: 34ch; }
+.rc-modal-foot > div { display: flex; gap: 8px; }
+.rc-cancel { background: transparent; border: 1px solid #2a3140; color: #cad1dc; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+.rc-save { background: #b08a2f; color: #12131a; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 640; cursor: pointer; font-size: 13px; }
+.rc-save:hover { background: #c6a15b; }
+.rc-save:disabled, .rc-cancel:disabled { opacity: 0.55; cursor: default; }
+
+@media (max-width: 560px) { .rc-grid { grid-template-columns: 1fr; } }

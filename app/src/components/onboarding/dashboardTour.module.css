@@ -1,0 +1,272 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.overlayVisible {
+  opacity: 1;
+}
+
+/* Used whenever there's no spotlight (target not found, or a centered stop like the node canvas).
+   Must block clicks itself — unlike the masked-hole path, there's no separate click-blocker layer
+   here — otherwise real controls underneath (chat input, Run/Smoke in the action bar) stay live
+   and clickable right through the "dimmed" backdrop. */
+.fallbackDim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  pointer-events: auto;
+}
+
+/* One SVG rect, masked with a rounded hole per highlighted element — the only way to cut several
+   independent holes without them darkening each other (a CSS box-shadow cutout can only ever do
+   one). Its dark fill also blocks every click on the page, including inside the holes, since SVG
+   hit-testing follows geometry, not the mask. */
+.maskSvg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+/* A soft light radiating from behind each highlighted element — filled and heavily blurred, larger
+   than the hole itself, blended additively so it brightens the dark backdrop without ever reading
+   as a hard ring traced at the edge. Fill opacity is set inline per stop (see TourStop.glowOpacity). */
+.glowRect {
+  filter: blur(28px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.card {
+  position: fixed;
+  isolation: isolate;
+  /* Positioning always uses pixel left/top; translateX centers horizontally. */
+  transform: translateX(-50%);
+  width: min(620px, 92vw);
+  max-width: calc(100vw - 2rem);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  /* Opacity-only appear — no translateY, which briefly shoved the card past the bottom edge. */
+  animation: cardAppear 0.35s ease both;
+  overflow: hidden;
+}
+
+.cardDesktop {
+  /* Belt-and-suspenders with JS clamp: never let the box paint under the 5px floor. */
+  max-height: calc(100dvh - 10px);
+}
+
+.cardCentered {
+  animation-name: cardAppear;
+}
+
+.cardExpanded {
+  width: min(1200px, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  transition: width 0.3s ease;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Glassmorphic frame around the video — frosted panel, not a flat white border. */
+.videoWrap {
+  position: relative;
+  padding: 3px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  max-width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.video {
+  width: 100%;
+  max-width: 100%;
+  max-height: min(52vh, calc(100dvh - 7.5rem));
+  border-radius: 13px;
+  background: #000000;
+  object-fit: contain;
+  display: block;
+}
+
+.videoExpanded {
+  max-height: min(78vh, calc(100dvh - 5.5rem));
+  object-fit: contain;
+}
+
+/* Just the icon — no button box/border/background, per design feedback. A drop-shadow keeps it
+   legible over bright video frames without needing a background plate. */
+.expandButton {
+  position: absolute;
+  z-index: 5;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--build-ui-text);
+  cursor: pointer;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.85));
+}
+
+.expandButton:hover {
+  color: var(--build-ui-text-muted);
+}
+
+/* Pure CSS/border icons — no SVG, no icon font, nothing that can silently fail to paint. */
+.expandGlyph {
+  position: relative;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+}
+
+.expandGlyph span {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border: 1.5px solid currentColor;
+}
+
+.expandGlyph span:nth-child(1) {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+}
+
+.expandGlyph span:nth-child(2) {
+  top: 0;
+  right: 0;
+  border-left: none;
+  border-bottom: none;
+}
+
+.expandGlyph span:nth-child(3) {
+  bottom: 0;
+  left: 0;
+  border-right: none;
+  border-top: none;
+}
+
+.expandGlyph span:nth-child(4) {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+}
+
+.collapseGlyph {
+  position: relative;
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+}
+
+.collapseGlyph span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 1.5px;
+  background: currentColor;
+}
+
+.collapseGlyph span:nth-child(1) {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.collapseGlyph span:nth-child(2) {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 0.15rem;
+  flex-shrink: 0;
+}
+
+.skipButton {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-subtle);
+  cursor: pointer;
+}
+
+.skipButton:hover {
+  color: var(--build-ui-text-muted);
+}
+
+.nextButton {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 6px;
+  padding: 0.55rem 1.3rem;
+  font-family: var(--font-source-code), monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.nextButton:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 768px) {
+  .card {
+    width: calc(100vw - 1.5rem);
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  .cardExpanded {
+    width: calc(100vw - 1.5rem);
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  .video {
+    max-height: min(46vh, 72vw, calc(100dvh - 7.5rem));
+  }
+
+  .videoExpanded {
+    max-height: min(72vh, 120vw, calc(100dvh - 5.5rem));
+  }
+
+  .controls {
+    padding: 0 0.1rem;
+  }
+}

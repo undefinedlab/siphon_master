@@ -1,0 +1,699 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background: #000000;
+  transition: opacity 0.6s ease;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.overlayExiting {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.contentWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: auto;
+  padding: 2rem 0;
+}
+
+.screen {
+  width: min(720px, 92vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(3.5rem, 8vh, 5rem);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.screenVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--build-ui-text);
+  width: 100%;
+}
+
+.heroLogo {
+  width: clamp(72px, 11vw, 110px);
+  height: auto;
+  display: block;
+}
+
+.timeLine {
+  font-size: clamp(14px, 2vw, 17px);
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--build-ui-text-muted);
+  margin: 1.75rem 0 0;
+}
+
+/* Practical screens — what / how */
+.explain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.85rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.explainTitle {
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--build-ui-text);
+  margin: 0;
+}
+
+.explainLead {
+  font-size: clamp(15px, 2.2vw, 17px);
+  line-height: 1.55;
+  color: var(--build-ui-text-muted);
+  max-width: 42ch;
+  font-weight: 400;
+  margin: 0;
+}
+
+.pointList {
+  list-style: none;
+  margin: 3.25rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-width: 52ch;
+  text-align: left;
+  width: 100%;
+}
+
+.pointItem {
+  position: relative;
+  padding-left: 1.1rem;
+  font-size: clamp(14px, 2vw, 16px);
+  line-height: 1.5;
+  color: var(--build-ui-text-muted);
+}
+
+.pointItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--build-ui-text);
+  opacity: 0.55;
+}
+
+.howList {
+  list-style: none;
+  margin: 2.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+  max-width: min(720px, 94vw);
+  text-align: center;
+}
+
+.howItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 0.85rem;
+  position: relative;
+}
+
+.howItem:not(:last-child)::after {
+  content: "→";
+  position: absolute;
+  right: -0.15rem;
+  top: 0.35rem;
+  color: var(--build-ui-text-muted);
+  opacity: 0.45;
+  font-size: 1rem;
+  font-weight: 400;
+  pointer-events: none;
+}
+
+.howIndex {
+  flex-shrink: 0;
+  width: auto;
+  font-family: var(--font-source-code), monospace;
+  font-size: clamp(11px, 1.5vw, 12px);
+  letter-spacing: 0.08em;
+  color: var(--build-ui-text-muted);
+  opacity: 0.75;
+  padding-top: 0;
+}
+
+.howCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.howTitle {
+  font-size: clamp(18px, 2.6vw, 22px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--build-ui-text);
+}
+
+.howBody {
+  font-size: clamp(12px, 1.7vw, 14px);
+  line-height: 1.45;
+  color: var(--build-ui-text-muted);
+  max-width: 22ch;
+}
+
+.disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin-top: 4.5rem;
+  max-width: 48ch;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+}
+
+.disclaimerInput {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.disclaimerTick {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 0.1rem;
+  border: 1px solid color-mix(in srgb, var(--build-ui-text) 55%, transparent);
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--build-ui-text);
+  background: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.disclaimerInput:checked + .disclaimerTick,
+.disclaimer:has(.disclaimerInput:checked) .disclaimerTick {
+  background: color-mix(in srgb, var(--build-ui-text) 12%, transparent);
+  border-color: var(--build-ui-text);
+}
+
+.disclaimerInput:focus-visible + .disclaimerTick {
+  outline: 2px solid var(--build-ui-text);
+  outline-offset: 2px;
+}
+
+.disclaimerText {
+  font-size: clamp(13px, 1.9vw, 15px);
+  line-height: 1.45;
+  color: var(--build-ui-text-muted);
+}
+
+.disclaimerLink {
+  font: inherit;
+  color: var(--build-ui-text);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.disclaimerLink:hover {
+  opacity: 0.85;
+}
+
+.disclaimerHint {
+  margin: 0.35rem 0 0;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--build-ui-text);
+  opacity: 0.75;
+}
+
+.disclaimerNudge {
+  animation: disclaimerShake 0.55s ease;
+}
+
+@keyframes disclaimerShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.scrollTipDisabled {
+  opacity: 0.4;
+  animation:
+    scrollHeroAppear 0.9s ease 0.45s both,
+    none;
+}
+
+.scrollTipDisabled .scrollChevron {
+  animation: none;
+}
+
+/* Terms modal */
+.tosBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.tosModal {
+  width: min(520px, 100%);
+  max-height: min(78vh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: #0a0a0a;
+  border: 1px solid color-mix(in srgb, var(--build-ui-text) 18%, transparent);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tosHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--build-ui-text) 12%, transparent);
+}
+
+.tosTitle {
+  margin: 0;
+  font-size: clamp(15px, 2.2vw, 17px);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--build-ui-text);
+}
+
+.tosClose {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--build-ui-text-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tosClose:hover {
+  color: var(--build-ui-text);
+}
+
+.tosBody {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  font-size: clamp(13px, 1.9vw, 14px);
+  line-height: 1.55;
+  color: var(--build-ui-text-muted);
+  -webkit-overflow-scrolling: touch;
+}
+
+.tosBody p {
+  margin: 0;
+}
+
+.tosBody strong {
+  color: var(--build-ui-text);
+  font-weight: 600;
+}
+
+.tosMeta {
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.tosFullLink {
+  color: var(--build-ui-text);
+  text-underline-offset: 0.15em;
+}
+
+.tosFooter {
+  padding: 0.85rem 1.15rem 1.1rem;
+  border-top: 1px solid color-mix(in srgb, var(--build-ui-text) 12%, transparent);
+}
+
+.tosAcceptBtn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--build-ui-text) 35%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--build-ui-text) 8%, transparent);
+  color: var(--build-ui-text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.tosAcceptBtn:hover {
+  background: color-mix(in srgb, var(--build-ui-text) 14%, transparent);
+}
+
+.footer {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  padding-bottom: clamp(2.5rem, 6vh, 4rem);
+}
+
+.pageDots {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.pageDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--build-ui-text-muted);
+  opacity: 0.35;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.pageDotActive {
+  opacity: 0.95;
+  transform: scale(1.15);
+  background: var(--build-ui-text);
+}
+
+.scrollTip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.65rem;
+  min-height: calc(1em + 0.65rem + 18px);
+  font-family: var(--font-source-code), monospace;
+  font-size: clamp(13px, 2.2vw, 16px);
+  letter-spacing: 0.2em;
+  text-transform: lowercase;
+  color: var(--build-ui-text);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  animation:
+    scrollHeroAppear 0.9s ease 0.45s both,
+    scrollHeroPulse 2.2s ease-in-out 1.35s infinite;
+}
+
+.scrollHintMobile {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .scrollHintDesktop {
+    display: none;
+  }
+
+  .scrollHintMobile {
+    display: inline;
+  }
+}
+
+.scrollChevron {
+  opacity: 0.85;
+  animation: scrollChevronBounce 2.2s ease-in-out 1.35s infinite;
+}
+
+@keyframes scrollHeroAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scrollHeroPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes scrollChevronBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(5px);
+    opacity: 1;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .contentWrap {
+    padding: 1.5rem 1.15rem;
+  }
+
+  .screen {
+    width: min(720px, 94vw);
+    gap: clamp(1.75rem, 5vh, 3rem);
+  }
+
+  .heroLogo {
+    width: clamp(88px, 24vw, 112px);
+  }
+
+  .timeLine {
+    font-size: clamp(17px, 4.2vw, 20px);
+    margin-top: 1.5rem;
+    letter-spacing: 0.08em;
+  }
+
+  .explain {
+    gap: 1.15rem;
+  }
+
+  .explainTitle {
+    font-size: clamp(32px, 8.5vw, 42px);
+    line-height: 1.12;
+  }
+
+  .explainLead {
+    font-size: clamp(19px, 5vw, 22px);
+    line-height: 1.55;
+    max-width: 34ch;
+  }
+
+  .pointList {
+    margin-top: 2.5rem;
+    max-width: 100%;
+    gap: 1.15rem;
+  }
+
+  .pointItem {
+    font-size: clamp(18px, 4.8vw, 20px);
+    line-height: 1.5;
+    padding-left: 1.25rem;
+  }
+
+  .pointItem::before {
+    top: 0.6em;
+    width: 6px;
+    height: 6px;
+  }
+
+  /* How-to: stack steps vertically on mobile */
+  .howList {
+    margin-top: 2.25rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .howItem {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 0 0 1.35rem;
+    text-align: left;
+  }
+
+  .howItem:not(:last-child) {
+    margin-bottom: 1.35rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .howItem:not(:last-child)::after {
+    content: none;
+  }
+
+  .howIndex {
+    font-size: 13px;
+    padding-top: 0.35rem;
+    min-width: 1.25rem;
+  }
+
+  .howCopy {
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.4rem;
+    flex: 1;
+  }
+
+  .howTitle {
+    font-size: clamp(20px, 5vw, 24px);
+  }
+
+  .howBody {
+    font-size: clamp(17px, 4.6vw, 19px);
+    line-height: 1.5;
+    max-width: none;
+  }
+
+  .disclaimer {
+    margin-top: 3rem;
+    max-width: 42ch;
+  }
+
+  .disclaimerText {
+    font-size: clamp(17px, 4.6vw, 19px);
+    line-height: 1.5;
+  }
+
+  .disclaimerHint {
+    font-size: 14px;
+  }
+
+  .footer {
+    padding-bottom: clamp(2.75rem, 7vh, 4.25rem);
+    gap: 1.25rem;
+  }
+
+  .scrollTip {
+    font-size: clamp(15px, 3.8vw, 18px);
+    gap: 0.75rem;
+  }
+
+  .scrollChevron {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroLogo {
+    width: clamp(96px, 28vw, 120px);
+  }
+
+  .timeLine {
+    font-size: 18px;
+    margin-top: 1.65rem;
+  }
+
+  .explainTitle {
+    font-size: clamp(30px, 9vw, 38px);
+  }
+
+  .explainLead {
+    font-size: 20px;
+  }
+
+  .pointItem {
+    font-size: 19px;
+  }
+
+  .howTitle {
+    font-size: 22px;
+  }
+
+  .howBody {
+    font-size: 18px;
+  }
+
+  .disclaimerText {
+    font-size: 18px;
+  }
+
+  .scrollTip {
+    font-size: 16px;
+  }
+}

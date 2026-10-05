@@ -1,0 +1,63 @@
+.build-sim-toast {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 120;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: min(92%, 480px);
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+  cursor: pointer;
+  animation: build-sim-toast-in 0.8s ease-out;
+}
+
+.build-sim-toast--exiting {
+  animation: build-sim-toast-out 0.9s ease-in forwards;
+}
+
+.build-sim-toast--error {
+  background: rgba(40, 12, 12, 0.94);
+  border: 1px solid rgba(239, 68, 68, 0.55);
+  color: rgba(254, 202, 202, 0.98);
+}
+
+.build-sim-toast--success {
+  background: rgba(10, 32, 18, 0.94);
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  color: rgba(187, 247, 208, 0.98);
+}
+
+.build-sim-toast svg {
+  flex-shrink: 0;
+}
+
+@keyframes build-sim-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes build-sim-toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+}

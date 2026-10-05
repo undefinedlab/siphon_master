@@ -1,0 +1,219 @@
+.pperps {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+  color: #e8e8e8;
+}
+
+.pperps-head {
+  margin-bottom: 1.5rem;
+}
+
+.pperps-kicker {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7ee2a8;
+  margin: 0 0 0.35rem;
+}
+
+.pperps-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: #fff;
+}
+
+.pperps-sub {
+  margin: 0;
+  color: #888;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.pperps-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.pperps-chip {
+  font-size: 0.72rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #aaa;
+}
+
+.pperps-chip--on {
+  color: #7ee2a8;
+  border-color: rgba(126, 226, 168, 0.35);
+}
+
+.pperps-chip--off {
+  color: #777;
+}
+
+.pperps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pperps-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  width: 100%;
+}
+
+.pperps-row:hover {
+  border-color: rgba(126, 226, 168, 0.35);
+  background: rgba(126, 226, 168, 0.04);
+}
+
+.pperps-coin {
+  font-weight: 600;
+  color: #fff;
+}
+
+.pperps-mid {
+  font-variant-numeric: tabular-nums;
+  color: #ccc;
+}
+
+.pperps-go {
+  font-size: 0.8rem;
+  color: #7ee2a8;
+}
+
+.pperps-state {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #888;
+}
+
+.pperps-state--err {
+  color: #e88;
+}
+
+.pperps-form {
+  margin-top: 1.25rem;
+  padding: 1.1rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.pperps-form h3 {
+  margin: 0 0 0.85rem;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.pperps-fields {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.pperps-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #999;
+}
+
+.pperps-fields input,
+.pperps-fields select {
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #111;
+  color: #eee;
+  font: inherit;
+}
+
+.pperps-side {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pperps-side button {
+  flex: 1;
+  padding: 0.55rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: #aaa;
+  cursor: pointer;
+  font: inherit;
+}
+
+.pperps-side button.is-on {
+  border-color: rgba(126, 226, 168, 0.5);
+  color: #7ee2a8;
+  background: rgba(126, 226, 168, 0.08);
+}
+
+.pperps-side button.is-short.is-on {
+  border-color: rgba(232, 120, 120, 0.5);
+  color: #e88;
+  background: rgba(232, 120, 120, 0.08);
+}
+
+.pperps-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.pperps-actions button {
+  flex: 1;
+  padding: 0.65rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.pperps-actions .primary {
+  background: #7ee2a8;
+  color: #0a0a0a;
+  font-weight: 600;
+}
+
+.pperps-actions .primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pperps-actions .ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ccc;
+}
+
+.pperps-msg {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.pperps-msg--err {
+  color: #e88;
+}
+
+.pperps-msg--ok {
+  color: #7ee2a8;
+}

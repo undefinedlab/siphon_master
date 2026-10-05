@@ -1,0 +1,350 @@
+/* Private Markets (Polymarket) — matches Siphon theme: black bg, source-code mono, translucent
+   white cards. Mirrors Discover/UserDash conventions. */
+
+.pmkt-view {
+  width: 100%;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  box-sizing: border-box;
+}
+
+.pmkt-wrap {
+  width: calc(100% - 3rem);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 0 4rem 0;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.pmkt-header { margin-bottom: 2rem; }
+
+.pmkt-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  color: var(--build-ui-text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.pmkt-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.pmkt-sub {
+  max-width: 640px;
+  color: var(--build-ui-text-muted);
+  line-height: 1.6;
+  font-size: 0.9rem;
+  margin: 0 0 1.1rem 0;
+}
+.pmkt-sub-em { color: var(--build-ui-text); }
+
+.pmkt-privacy-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
+}
+.pmkt-chip {
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
+}
+.pmkt-chip--on { color: #7ee2a8; border-color: rgba(126, 226, 168, 0.35); }
+.pmkt-chip--off { color: var(--build-ui-text-muted); }
+
+.pmkt-searchbar {
+  display: flex;
+  gap: 0.6rem;
+  max-width: 520px;
+}
+.pmkt-search {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  color: var(--build-ui-text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+}
+.pmkt-search:focus { border-color: var(--build-ui-text-subtle); }
+.pmkt-search::placeholder { color: var(--build-ui-text-subtle); }
+.pmkt-refresh {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: var(--build-ui-text);
+  width: 2.6rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.pmkt-refresh:hover { background: rgba(255, 255, 255, 0.1); }
+.pmkt-refresh:disabled { opacity: 0.6; cursor: default; }
+.pmkt-refresh--spin { animation: pmkt-spin 0.7s linear infinite; }
+@keyframes pmkt-spin { to { transform: rotate(360deg); } }
+
+/* On the standalone /markets page, pin the Siphon logo to the far left (the shared nav centers
+   its 1200px container; here we want it hard-left). Scoped via the .markets-page wrapper. */
+.markets-page nav .nav-container {
+  max-width: 100%;
+  margin-left: 0;
+  padding-left: 2.5rem;
+}
+@media (max-width: 640px) {
+  .markets-page nav .nav-container { padding-left: 1rem; }
+}
+
+/* ── Category chips ─────────────────────────────────────────────────────── */
+.pmkt-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.pmkt-cat {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  color: var(--build-ui-text-muted);
+  font-family: inherit;
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.pmkt-cat:hover { color: var(--build-ui-text); border-color: rgba(255, 255, 255, 0.24); }
+.pmkt-cat--on { background: rgba(255, 255, 255, 0.92); color: #000; border-color: var(--build-ui-text); font-weight: 600; }
+.pmkt-cat-count { opacity: 0.55; font-size: 0.7rem; }
+.pmkt-cat--on .pmkt-cat-count { opacity: 0.6; }
+
+/* ── Event groups ───────────────────────────────────────────────────────── */
+.pmkt-groups { display: flex; flex-direction: column; gap: 0.85rem; }
+
+.pmkt-group {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.pmkt-group-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--build-ui-text);
+  font-family: inherit;
+}
+.pmkt-group-head:hover { background: rgba(255, 255, 255, 0.03); }
+.pmkt-group-img {
+  width: 38px; height: 38px; border-radius: 8px; object-fit: cover; flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+}
+.pmkt-group-img--ph { border: 1px solid rgba(255, 255, 255, 0.08); }
+.pmkt-group-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.pmkt-group-title {
+  font-size: 0.92rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pmkt-group-meta { font-size: 0.7rem; color: var(--build-ui-text-subtle); }
+.pmkt-group-cat {
+  color: #7ee2a8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.64rem;
+}
+.pmkt-group-chev {
+  flex-shrink: 0;
+  color: var(--build-ui-text-subtle);
+  transition: transform 0.15s ease;
+  font-size: 0.85rem;
+}
+.pmkt-group-chev--open { transform: rotate(90deg); }
+
+.pmkt-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.7rem;
+  padding: 0 1rem 1rem;
+}
+
+.pmkt-mini {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 9px;
+  padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.pmkt-mini:hover { border-color: rgba(255, 255, 255, 0.2); }
+.pmkt-mini-label {
+  font-size: 0.8rem; font-weight: 600; color: var(--build-ui-text);
+  line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.pmkt-mini-odds { display: flex; flex-direction: column; gap: 0.35rem; }
+.pmkt-mini-btn {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000; border: none; border-radius: 7px;
+  padding: 0.5rem; font-family: inherit; font-weight: 600; font-size: 0.76rem; cursor: pointer;
+}
+.pmkt-mini-btn:hover { background: #fff; }
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+.pmkt-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--build-ui-text-muted);
+  font-style: italic;
+}
+.pmkt-state--err { color: #f08a8a; }
+
+/* ── Grid + cards ───────────────────────────────────────────────────────── */
+.pmkt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.pmkt-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+.pmkt-card:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.pmkt-card-top { display: flex; gap: 0.75rem; align-items: flex-start; }
+.pmkt-card-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+}
+.pmkt-card-img--ph { border: 1px solid rgba(255, 255, 255, 0.08); }
+.pmkt-card-q {
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+  color: var(--build-ui-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Odds bar */
+.pmkt-odds { display: flex; flex-direction: column; gap: 0.4rem; }
+.pmkt-odds-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(240, 138, 138, 0.28); /* NO side */
+  overflow: hidden;
+}
+.pmkt-odds-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #7ee2a8; /* YES side */
+  transition: width 0.3s ease;
+}
+.pmkt-odds-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+}
+.pmkt-odds-yes { color: #7ee2a8; }
+.pmkt-odds-no { color: rgba(240, 138, 138, 0.85); }
+
+/* Multi-outcome (neg-risk) card rows — top outcomes ranked by odds */
+.pmkt-outcome-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+}
+.pmkt-outcome-row-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--build-ui-text);
+}
+.pmkt-outcome-row-pct {
+  color: #7ee2a8;
+  font-variant-numeric: tabular-nums;
+}
+.pmkt-odds-bar--slim {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.12); /* neutral track — no YES/NO framing */
+}
+.pmkt-outcome-more {
+  font-size: 0.68rem;
+  color: var(--build-ui-text-muted);
+}
+
+.pmkt-card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--build-ui-text-subtle);
+}
+
+.pmkt-trade-btn {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.pmkt-trade-btn:hover { background: #fff; }
+
+.pmkt-foot {
+  margin-top: 2.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.72rem;
+  color: var(--build-ui-text-subtle);
+  line-height: 1.6;
+  max-width: 640px;
+}
+
+@media (max-width: 640px) {
+  .pmkt-wrap { width: calc(100% - 1.5rem); }
+  .pmkt-title { font-size: 1.8rem; }
+  .pmkt-grid { grid-template-columns: 1fr; }
+}

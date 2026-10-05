@@ -1,0 +1,65 @@
+.build-node-context-menu {
+  position: fixed;
+  z-index: 2000;
+  min-width: 180px;
+  padding: 0.35rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(8, 8, 8, 0.96);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.build-node-context-menu-label {
+  padding: 0.45rem 0.65rem 0.35rem;
+  color: var(--build-ui-text-subtle);
+  font-family: var(--font-source-code), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.build-node-context-menu-section {
+  padding: 0.35rem 0.65rem 0.15rem;
+  color: rgba(147, 197, 253, 0.75);
+  font-family: var(--font-source-code), monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.build-node-context-menu-item {
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  padding: 0.6rem 0.65rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.build-node-context-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--build-ui-text);
+}
+
+.build-node-context-menu-item-danger {
+  color: rgba(248, 113, 113, 0.95);
+}
+
+.build-node-context-menu-item-danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: rgba(252, 165, 165, 1);
+}

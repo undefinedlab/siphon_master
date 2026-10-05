@@ -1,0 +1,2433 @@
+/* UserDash View Styles */
+.userdash-view {
+  width: calc(100% - 3rem);
+  height: auto;
+  max-width: 1400px;
+  margin: 0px auto 0 auto;
+  padding: 0px 0 2rem 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  box-sizing: border-box;
+  overflow: visible;
+  color: var(--build-ui-text);
+}
+
+.userdash-view::-webkit-scrollbar {
+  display: none;
+}
+
+.userdash-view {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.userdash-view.loaded {
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 0px;
+  padding-top: 0px;
+}
+
+.pro-mode-wrapper--userdash,
+.pro-mode-content--userdash {
+  background: var(--build-page-bg, #000);
+}
+
+.pro-mode-wrapper--userdash {
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.userdash-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.userdash-header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.userdash-header-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.userdash-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.userdash-chain-toggle {
+  display: flex;
+  gap: 0.5rem;
+  /* Override Discover.css margin that misaligns header controls */
+  margin-top: 0;
+}
+
+.userdash-chain-toggle button.strategy-modal-category-badge {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.375rem 0.75rem;
+  font-family: var(--font-source-code), monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-muted);
+}
+
+.userdash-chain-toggle button.strategy-modal-category-badge.active {
+  background: rgba(91, 141, 239, 0.2);
+  border-color: rgba(91, 141, 239, 0.5);
+  color: var(--build-ui-text);
+}
+
+.userdash-chain-toggle button.strategy-modal-category-badge:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.userdash-chain-slot {
+  position: relative;
+  display: inline-flex;
+}
+
+.userdash-chain-slot--locked button {
+  opacity: 0.38;
+}
+
+.userdash-chain-lock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.85));
+}
+
+.userdash-chain-toggle button.strategy-modal-category-badge.userdash-chain-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  min-width: 2.15rem;
+  padding: 0.375rem 0.35rem;
+  color: #fff;
+}
+
+.userdash-chain-switch .userdash-card-icon {
+  color: #fff;
+  stroke: #fff;
+}
+
+.userdash-title {
+  color: var(--build-ui-text);
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+  font-family: var(--font-source-code), monospace;
+}
+
+.userdash-logout-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.userdash-logout-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--build-ui-text);
+}
+
+.userdash-network-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.userdash-network-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 0.4rem 0.9rem;
+  color: var(--build-ui-text-muted);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.userdash-network-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--build-ui-text);
+}
+
+.userdash-network-btn.active {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.95);
+  color: #000;
+  font-weight: 600;
+}
+
+.userdash-network-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.userdash-network-btn--soon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.55;
+}
+
+.userdash-soon-tag {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(243, 217, 126, 0.95);
+  border: 1px solid rgba(243, 217, 126, 0.4);
+  border-radius: 999px;
+  padding: 0.12rem 0.4rem;
+  line-height: 1.2;
+}
+
+.userdash-page-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+}
+
+.userdash-address {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--build-ui-text-muted);
+  font-size: 0.875rem;
+  font-family: var(--font-source-code), monospace;
+}
+
+.userdash-address--in-card {
+  margin-top: 0.15rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+}
+
+.userdash-address-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.75rem;
+}
+
+.userdash-address-value {
+  color: var(--build-ui-text);
+  font-weight: 500;
+}
+
+.userdash-copy-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  color: var(--build-ui-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.userdash-copy-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.userdash-balances {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.userdash-balance-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+
+.userdash-balance-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.userdash-balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.userdash-header-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.userdash-info {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+.userdash-info-btn {
+  width: auto;
+  height: auto;
+  min-width: 1rem;
+  min-height: 1rem;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.userdash-info-btn--letter {
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.userdash-info-btn:hover,
+.userdash-info-btn.active {
+  background: transparent;
+  opacity: 1;
+}
+
+.userdash-card-icon {
+  display: block;
+  color: #fff;
+}
+
+.userdash-info-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(280px, 72vw);
+  z-index: 30;
+  padding: 0.7rem 0.8rem;
+  background: rgba(12, 12, 12, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  color: var(--build-ui-text-muted);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.72rem;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-transform: none;
+  text-align: left;
+}
+
+.userdash-balance-title {
+  color: var(--build-ui-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  font-family: var(--font-source-code), monospace;
+}
+
+.userdash-balance-network {
+  color: var(--build-ui-text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: var(--font-source-code), monospace;
+}
+
+/* Backup-pending indicator: a note's Supabase backup failed and is retrying. */
+.userdash-backup-badge {
+  color: rgba(243, 217, 126, 0.95);
+  background: rgba(243, 217, 126, 0.1);
+  border: 1px solid rgba(243, 217, 126, 0.35);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  font-family: var(--font-source-code), monospace;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.userdash-balance-content {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+/* New styles for multi-line balance display */
+.userdash-balance-content-multi {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Adjust as needed for spacing between items */
+}
+
+.userdash-balance-item-multi {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.userdash-balance-item-checking {
+  margin-top: 0.15rem;
+}
+
+.userdash-balance-amount--checking {
+  font-size: 1.1rem;
+  color: rgba(243, 217, 126, 0.95);
+}
+
+.userdash-balance-phase {
+  margin-left: 0.35rem;
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-subtle);
+}
+
+.userdash-balance-phase--checking {
+  color: rgba(243, 217, 126, 0.8);
+}
+
+.userdash-balance-item-flagged {
+  margin-top: 0.15rem;
+}
+
+.userdash-balance-amount--flagged {
+  font-size: 1.1rem;
+  color: rgba(240, 138, 138, 0.95);
+}
+
+.userdash-balance-phase--flagged {
+  color: rgba(240, 138, 138, 0.9);
+}
+
+.userdash-balance-amount {
+  color: var(--build-ui-text);
+  font-size: 1.6rem;
+  font-weight: 600;
+  font-family: var(--font-source-code), monospace;
+  line-height: 1;
+}
+
+.userdash-balance-currency {
+  color: var(--build-ui-text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: var(--font-source-code), monospace;
+}
+
+.userdash-balance-loading {
+  color: var(--build-ui-text-muted);
+  font-size: 1rem;
+  font-family: var(--font-source-code), monospace;
+}
+
+.userdash-balance-description {
+  color: var(--build-ui-text-muted);
+  font-size: 0.75rem;
+  font-family: var(--font-source-code), monospace;
+  margin-top: 0.5rem;
+}
+
+/* Empty private balance placeholder (when only flagged/in-review funds exist). */
+.userdash-balance-amount--empty {
+  color: var(--build-ui-text-subtle);
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+
+/* Secondary balances — small, below the big private figure. */
+.userdash-secondary-balances {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.userdash-secondary-balance-title {
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-subtle);
+  margin-bottom: 0.2rem;
+}
+
+.userdash-secondary-balance-group--flagged .userdash-secondary-balance-title {
+  color: rgba(240, 138, 138, 0.8);
+}
+
+.userdash-secondary-balance-group--review .userdash-secondary-balance-title {
+  color: rgba(243, 217, 126, 0.8);
+}
+
+.userdash-secondary-balance-hint {
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.58rem;
+  line-height: 1.4;
+  color: var(--build-ui-text-subtle);
+  opacity: 0.75;
+  margin-top: 0.25rem;
+}
+
+.userdash-secondary-balance-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.userdash-secondary-balance-amount {
+  font-family: var(--font-source-code), monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.userdash-secondary-balance-amount--flagged {
+  color: rgba(240, 138, 138, 0.95);
+}
+
+.userdash-secondary-balance-amount--review {
+  color: rgba(243, 217, 126, 0.95);
+}
+
+/* Ragequit, offered inline on an in-review note. Deliberately quiet: waiting for admission keeps
+   the deposit private and is the right default, so this must read as an escape hatch and never as
+   the primary action. */
+.userdash-review-ragequit {
+  margin-left: auto;
+  padding: 0.12rem 0.5rem;
+  border: 1px solid rgba(243, 217, 126, 0.35);
+  border-radius: 3px;
+  background: transparent;
+  color: rgba(243, 217, 126, 0.9);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.userdash-review-ragequit:hover:not(:disabled) {
+  background: rgba(243, 217, 126, 0.12);
+  border-color: rgba(243, 217, 126, 0.6);
+}
+
+.userdash-review-ragequit:disabled { opacity: 0.45; cursor: default; }
+.userdash-review-ragequit:focus-visible { outline: 2px solid rgba(243, 217, 126, 0.7); outline-offset: 2px; }
+
+.userdash-secondary-balance-currency {
+  color: var(--build-ui-text-muted);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.78rem;
+}
+
+.userdash-actions {
+  width: 100%;
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.userdash-action-button {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.userdash-action-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.userdash-action-button:active {
+  transform: translateY(0);
+}
+
+.userdash-empty-state {
+  width: 100%;
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--build-ui-text-muted);
+}
+
+.userdash-empty-state h2 {
+  color: var(--build-ui-text);
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-source-code), monospace;
+}
+
+.userdash-empty-state p {
+  font-size: 1rem;
+  font-family: var(--font-source-code), monospace;
+}
+
+/* Transaction Mode Toggle Styles */
+.userdash-mode-toggle {
+  color: var(--build-ui-text-subtle);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.userdash-mode-toggle:hover {
+  color: var(--build-ui-text-muted);
+}
+
+.userdash-mode-toggle.active {
+  color: var(--build-ui-text);
+  font-weight: 600;
+}
+
+/* Transaction Content Styles */
+.userdash-transaction-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.userdash-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.userdash-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.userdash-amount-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.userdash-input--amount {
+  width: 100%;
+  padding-right: 3.25rem;
+  /* Kill browser spinner arrows — Max replaces them. */
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.userdash-input--amount::-webkit-outer-spin-button,
+.userdash-input--amount::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.userdash-max-button {
+  position: absolute;
+  right: 0.45rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.45rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.userdash-max-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--build-ui-text);
+}
+
+.userdash-max-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.userdash-input::placeholder {
+  color: var(--build-ui-text-subtle);
+}
+
+.userdash-input:focus {
+  outline: none;
+  border-color: var(--build-ui-text-subtle);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.userdash-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+/* Chain pickers: the fund picker must not shrink (it clipped "Arbitrum" to "Arbit"), and the
+   receive picker sits alone on its row, so it takes the full width. */
+.userdash-select--fixed {
+  flex: 0 0 auto;
+}
+
+.userdash-select--grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.userdash-select:focus {
+  outline: none;
+  border-color: var(--build-ui-text-subtle);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.userdash-select option {
+  background: #1a1a1a;
+  color: var(--build-ui-text);
+}
+
+/* Confirm Button Styles */
+.userdash-confirm-button {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.875rem 1.5rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.5rem;
+}
+
+.userdash-confirm-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.userdash-confirm-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.userdash-confirm-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.userdash-ragequit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.userdash-ragequit-copy {
+  margin: 0;
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--build-ui-text-muted);
+}
+
+.userdash-ragequit-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(240, 138, 138, 0.35);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  color: rgba(240, 138, 138, 0.95);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.userdash-ragequit-button:hover:not(:disabled) {
+  background: rgba(240, 138, 138, 0.08);
+  border-color: rgba(240, 138, 138, 0.55);
+}
+
+.userdash-ragequit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.userdash-ragequit-status {
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: rgba(243, 217, 126, 0.85);
+  border: 1px solid rgba(243, 217, 126, 0.35);
+  border-radius: 999px;
+  padding: 0.12rem 0.4rem;
+  text-transform: uppercase;
+}
+
+.userdash-trust-lock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(243, 217, 126, 0.35);
+  background: rgba(243, 217, 126, 0.06);
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.userdash-trust-lock:hover {
+  border-color: rgba(243, 217, 126, 0.55);
+  background: rgba(243, 217, 126, 0.1);
+}
+
+.userdash-trust-lock-badge {
+  flex-shrink: 0;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  color: #f3d97e;
+  border: 1px solid rgba(243, 217, 126, 0.45);
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+}
+
+.userdash-trust-lock-text {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.userdash-trust-lock-cta {
+  flex-shrink: 0;
+  color: #f3d97e;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+}
+
+.userdash-notes-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  grid-column: span 1;
+  width: 100%;
+  align-self: start;
+  height: auto;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.userdash-bottom-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.userdash-side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  align-self: start;
+}
+
+.userdash-overview-backup {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+.userdash-keysplusnotes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  width: 100%;
+  align-items: stretch;
+}
+
+.userdash-keysplusnotes-block {
+  min-width: 0;
+  height: 100%;
+  padding: 0.85rem 0.9rem;
+  gap: 0.65rem;
+  box-sizing: border-box;
+}
+
+.userdash-keysplusnotes-block .userdash-balance-title {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+.userdash-keysplusnotes-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  margin-top: auto;
+  width: 100%;
+}
+
+.userdash-notes-button--compact {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 2rem;
+  height: 2rem;
+  padding: 0 0.55rem;
+  gap: 0.35rem;
+  border-radius: 7px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.userdash-notes-button--compact svg {
+  display: block;
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+}
+
+.userdash-notes-button--compact span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userdash-fhe-card .userdash-fhe-action.userdash-notes-button--compact {
+  min-width: 0;
+}
+
+.userdash-icon-spin {
+  animation: userdash-icon-spin 0.8s linear infinite;
+}
+
+@keyframes userdash-icon-spin {
+  to { transform: rotate(360deg); }
+}
+
+.userdash-backup-page {
+  width: 100%;
+}
+
+.userdash-side-stack--backup {
+  gap: 0.75rem;
+}
+
+.userdash-side-stack--backup .userdash-keysplusnotes {
+  width: 100%;
+}
+
+.userdash-activity-card {
+  grid-column: span 2;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 100%;
+}
+
+.userdash-activity-description {
+  margin: 0;
+  color: var(--build-ui-text-muted);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.userdash-activity-privacy {
+  margin: 0;
+  color: var(--build-ui-text-subtle);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.65rem;
+  line-height: 1.4;
+}
+
+.userdash-activity-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.userdash-activity-export {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: var(--build-ui-text);
+  padding: 0.25rem 0.5rem;
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.userdash-activity-export:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: var(--build-ui-text);
+}
+
+.userdash-activity-error-hint {
+  color: var(--build-ui-text-muted);
+}
+
+.userdash-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.userdash-activity-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.userdash-activity-filters {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.userdash-activity-filter {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 0.3rem 0.55rem;
+  color: var(--build-ui-text-muted);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.userdash-activity-filter:hover {
+  color: var(--build-ui-text);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.userdash-activity-filter.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--build-ui-text-subtle);
+  color: var(--build-ui-text);
+}
+
+.userdash-activity-refresh {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: var(--build-ui-text-muted);
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.userdash-activity-refresh:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: var(--build-ui-text);
+}
+
+.userdash-activity-refresh:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.userdash-activity-error {
+  margin: 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.22);
+  color: #ff8a80;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.userdash-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 1;
+  min-height: 0;
+  max-height: calc(5 * 4.75rem + 4 * 0.55rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.15rem;
+}
+
+.userdash-activity-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.userdash-activity-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+}
+
+.userdash-activity-empty {
+  margin: 0.5rem 0 0;
+  color: var(--build-ui-text-subtle);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.userdash-activity-item {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.userdash-activity-item.is-active {
+  background: rgba(255, 193, 7, 0.04);
+}
+
+.userdash-activity-item.status-failed {
+  border-color: rgba(244, 67, 54, 0.22);
+}
+
+.userdash-activity-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.userdash-activity-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.userdash-activity-item-title {
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.userdash-activity-item-type {
+  color: var(--build-ui-text-subtle);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.userdash-activity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.userdash-activity-badge.status-pending,
+.userdash-activity-badge.status-armed {
+  background: rgba(255, 193, 7, 0.14);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+}
+
+.userdash-activity-badge.status-executed {
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.userdash-activity-badge.status-failed {
+  background: rgba(244, 67, 54, 0.14);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  color: #ff8a80;
+}
+
+.userdash-activity-badge.status-checking {
+  background: rgba(243, 217, 126, 0.12);
+  border: 1px solid rgba(243, 217, 126, 0.35);
+  color: #f3d97e;
+}
+
+.userdash-activity-badge.status-flagged {
+  background: rgba(240, 138, 138, 0.14);
+  border: 1px solid rgba(240, 138, 138, 0.4);
+  color: #f08a8a;
+}
+
+.userdash-activity-badge.status-ragequit {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--build-ui-text-muted);
+}
+
+.userdash-activity-badge--icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.userdash-activity-item-flags {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.userdash-activity-ragequit {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(240, 138, 138, 0.45);
+  color: #f08a8a;
+  padding: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.userdash-activity-ragequit:hover:not(:disabled) {
+  background: rgba(240, 138, 138, 0.1);
+  border-color: rgba(240, 138, 138, 0.7);
+}
+
+.userdash-activity-ragequit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.userdash-activity-recover-all {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid rgba(240, 138, 138, 0.45);
+  color: #f08a8a;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.userdash-activity-recover-all:hover:not(:disabled) {
+  background: rgba(240, 138, 138, 0.1);
+  border-color: rgba(240, 138, 138, 0.7);
+}
+
+.userdash-activity-recover-all:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Ragequit-all: the primary revoked-funds recovery (all-or-nothing). Slightly stronger than recover-all. */
+.userdash-activity-ragequit-all {
+  flex-shrink: 0;
+  background: rgba(240, 138, 138, 0.14);
+  border: 1px solid rgba(240, 138, 138, 0.7);
+  color: #f08a8a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.userdash-activity-ragequit-all:hover:not(:disabled) {
+  background: rgba(240, 138, 138, 0.22);
+}
+.userdash-activity-ragequit-all:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.userdash-activity-help {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--build-ui-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.userdash-activity-help:hover {
+  border-color: var(--build-ui-text-muted);
+  color: var(--build-ui-text);
+}
+
+.userdash-ragequit-help {
+  margin: 8px 0 4px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--build-ui-text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+.userdash-ragequit-help strong { color: var(--build-ui-text); }
+
+.userdash-activity-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: userdash-activity-pulse 2s ease-in-out infinite;
+}
+
+@keyframes userdash-activity-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.userdash-activity-item-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.45rem;
+  color: var(--build-ui-text-subtle);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.65rem;
+}
+
+.userdash-activity-meta-left,
+.userdash-activity-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.userdash-activity-meta-left {
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.userdash-activity-meta-right {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.userdash-activity-chain {
+  padding: 0.05rem 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.35rem;
+  color: var(--build-ui-text-muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.userdash-activity-tx {
+  color: var(--build-ui-text-muted);
+  text-decoration: none;
+}
+
+.userdash-activity-tx:hover {
+  border-color: var(--build-ui-text-subtle);
+  color: var(--build-ui-text);
+}
+
+.userdash-activity-tx--ragequit {
+  border-color: rgba(240, 138, 138, 0.4);
+  color: #f08a8a;
+}
+
+.userdash-activity-tx--ragequit:hover {
+  border-color: rgba(240, 138, 138, 0.7);
+  color: #fecaca;
+}
+
+.userdash-activity-receipt {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: var(--build-ui-text-muted);
+  padding: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s, color 0.15s;
+}
+
+.userdash-activity-receipt:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--build-ui-text-subtle);
+  color: var(--build-ui-text);
+}
+
+.userdash-activity-receipt:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--build-ui-text-subtle);
+}
+
+.userdash-activity-abort {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid rgba(220, 90, 90, 0.4);
+  color: #e07a7a;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.userdash-activity-abort:hover:not(:disabled) {
+  background: rgba(220, 90, 90, 0.12);
+  border-color: #e07a7a;
+}
+
+.userdash-activity-abort:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 960px) {
+  .userdash-bottom-row {
+    grid-template-columns: 1fr;
+  }
+
+  .userdash-activity-card,
+  .userdash-notes-card,
+  .userdash-side-stack {
+    grid-column: span 1;
+  }
+
+  .userdash-activity-list {
+    flex: none;
+    max-height: calc(5 * 4.75rem + 4 * 0.55rem);
+  }
+
+  .userdash-notes-card {
+    height: auto;
+  }
+}
+
+/* Mobile overview — shared balance row + larger touch targets / type */
+@media (max-width: 720px) {
+  .userdash-view {
+    width: calc(100% - 1.25rem);
+    padding-bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1rem));
+  }
+
+  .userdash-content-wrapper {
+    gap: 1.15rem;
+  }
+
+  .userdash-bottom-row {
+    width: 100%;
+  }
+
+  .userdash-header {
+    gap: 0.85rem;
+    padding-bottom: 1rem;
+  }
+
+  .userdash-title {
+    font-size: 1.55rem;
+  }
+
+  .userdash-page-toggle {
+    width: 100%;
+    gap: 0.45rem;
+  }
+
+  /* Backup lives in its own tab on mobile — hide from overview stack */
+  .userdash-overview-backup {
+    display: none;
+  }
+
+  .userdash-backup-page {
+    width: 100%;
+  }
+
+  .userdash-side-stack--backup {
+    gap: 0.75rem;
+  }
+
+  .userdash-side-stack--backup .userdash-notes-card,
+  .userdash-side-stack--backup .userdash-keysplusnotes {
+    width: 100%;
+  }
+
+  .userdash-keysplusnotes {
+    gap: 0.65rem;
+  }
+
+  .userdash-keysplusnotes-block {
+    padding: 0.8rem 0.75rem;
+  }
+
+  .userdash-notes-button--compact {
+    min-height: 2.35rem;
+    height: 2.35rem;
+    padding: 0 0.6rem;
+    font-size: 0.72rem;
+  }
+
+  .userdash-page-toggle .userdash-network-btn,
+  .userdash-chain-toggle button.strategy-modal-category-badge,
+  .userdash-logout-button {
+    flex: 1;
+    justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 2.75rem;
+    height: 2.75rem;
+    padding: 0 0.75rem;
+    font-size: 0.88rem;
+    border-radius: 8px;
+  }
+
+  .userdash-header-actions {
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .userdash-chain-toggle {
+    margin-top: 0;
+    align-items: center;
+  }
+
+  .userdash-chain-toggle button.userdash-chain-switch {
+    flex: 0 0 auto;
+    width: 2.75rem;
+    padding: 0;
+    color: #fff;
+  }
+
+  .userdash-logout-button {
+    flex: 0 0 auto;
+    gap: 0.4rem;
+  }
+
+  .userdash-logout-button svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+
+  .userdash-balances {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .userdash-balance-card {
+    min-width: 0;
+    padding: 1rem 0.85rem;
+    gap: 0.7rem;
+    border-radius: 14px;
+  }
+
+  /* Twin balance cards — amounts own the vertical space */
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) {
+    min-height: clamp(10.5rem, 34vw, 13.5rem);
+  }
+
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-balance-content-multi {
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: 0.7rem;
+    min-height: 0;
+  }
+
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-balance-item-multi {
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.4rem;
+    width: 100%;
+  }
+
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-balance-amount {
+    font-size: clamp(1.55rem, 7.2vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-balance-currency {
+    font-size: clamp(0.85rem, 3.4vw, 1.05rem);
+    font-weight: 600;
+  }
+
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-balance-loading {
+    font-size: clamp(0.85rem, 3.6vw, 1.05rem);
+    line-height: 1.35;
+  }
+
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-balance-amount--empty {
+    font-size: clamp(1.05rem, 4.5vw, 1.35rem);
+  }
+
+  .userdash-balance-card--action {
+    grid-column: 1 / -1;
+    padding: 1.25rem 1.1rem;
+    gap: 1rem;
+  }
+
+  .userdash-balance-title {
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+  }
+
+  .userdash-balance-card--action .userdash-balance-title {
+    font-size: 1rem;
+  }
+
+  .userdash-balance-network {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .userdash-balance-content-multi {
+    gap: 0.55rem;
+  }
+
+  .userdash-balance-amount {
+    font-size: 1.35rem;
+  }
+
+  .userdash-balance-currency {
+    font-size: 0.9rem;
+  }
+
+  .userdash-balance-loading,
+  .userdash-balance-description {
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .userdash-balance-amount--empty {
+    font-size: 0.95rem;
+  }
+
+  /* Twin cards: keep address / footnotes compact so the row stays readable */
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-address-label {
+    display: none;
+  }
+
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-address--in-card {
+    padding-top: 0.55rem;
+    gap: 0.4rem;
+  }
+
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-address-value {
+    font-size: 0.72rem;
+  }
+
+  .userdash-balances > .userdash-balance-card:not(.userdash-balance-card--action) .userdash-balance-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 0.15rem;
+  }
+
+  .userdash-mode-toggle {
+    font-size: 1rem;
+    padding: 0.15rem 0.1rem;
+  }
+
+  .userdash-input-group {
+    gap: 0.65rem;
+  }
+
+  .userdash-input,
+  .userdash-select {
+    min-height: 3.15rem;
+    padding: 0.9rem 1rem;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
+
+  .userdash-input--amount {
+    padding-right: 3.75rem;
+    font-size: 1.05rem;
+  }
+
+  .userdash-max-button {
+    font-size: 0.72rem;
+    padding: 0.4rem 0.55rem;
+    right: 0.55rem;
+  }
+
+  .userdash-select {
+    min-width: 5.5rem;
+  }
+
+  .userdash-confirm-button {
+    min-height: 3.25rem;
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    margin-top: 0.35rem;
+  }
+
+  .userdash-ragequit-button {
+    min-height: 3rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .userdash-ragequit-copy,
+  .userdash-fee-quoting,
+  .userdash-fee-modes,
+  .userdash-fee-breakdown {
+    font-size: 0.8rem;
+  }
+
+  .userdash-notes-button:not(.userdash-notes-button--compact) {
+    min-height: 2.85rem;
+    padding: 0.8rem 1.1rem;
+    font-size: 0.9rem;
+  }
+
+  .userdash-copy-button {
+    min-width: 2.1rem;
+    min-height: 2.1rem;
+    padding: 0.35rem;
+  }
+
+  .userdash-secondary-balance-amount {
+    font-size: 1.05rem;
+  }
+
+  .userdash-secondary-balance-title {
+    font-size: 0.7rem;
+  }
+
+  .userdash-secondary-balance-hint {
+    font-size: 0.68rem;
+  }
+
+  .userdash-review-ragequit {
+    font-size: 0.72rem;
+    padding: 0.28rem 0.55rem;
+  }
+
+  .userdash-activity-list {
+    max-height: none;
+  }
+
+  .userdash-activity-card {
+    padding: 1.25rem 1.1rem;
+    gap: 0.85rem;
+  }
+
+  .userdash-activity-description,
+  .userdash-activity-privacy {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .userdash-activity-filter {
+    font-size: 0.78rem;
+    padding: 0.45rem 0.7rem;
+    min-height: 2.35rem;
+  }
+
+  .userdash-activity-export,
+  .userdash-activity-recover-all,
+  .userdash-activity-ragequit-all,
+  .userdash-activity-help {
+    font-size: 0.78rem;
+    padding: 0.45rem 0.7rem;
+    min-height: 2.35rem;
+  }
+
+  .userdash-activity-refresh {
+    font-size: 1rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+  }
+
+  .userdash-activity-item {
+    padding: 0.95rem 0.85rem;
+    gap: 0.45rem;
+  }
+
+  .userdash-activity-item-title {
+    font-size: 0.98rem;
+    line-height: 1.35;
+  }
+
+  .userdash-activity-item-type {
+    font-size: 0.78rem;
+  }
+
+  .userdash-activity-badge {
+    font-size: 0.72rem;
+    padding: 0.22rem 0.5rem;
+  }
+
+  .userdash-activity-item-meta {
+    font-size: 0.8rem;
+    margin-top: 0.55rem;
+    gap: 0.55rem;
+  }
+
+  .userdash-activity-chain {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.45rem;
+  }
+
+  .userdash-activity-ragequit,
+  .userdash-activity-receipt,
+  .userdash-activity-abort {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.65rem;
+    min-height: 2.25rem;
+  }
+
+  .userdash-activity-empty,
+  .userdash-activity-error {
+    font-size: 0.9rem;
+  }
+
+  .userdash-notes-description {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .userdash-notes-card .userdash-balance-title {
+    font-size: 0.95rem;
+  }
+}
+
+.userdash-notes-description {
+  margin: 0;
+  color: var(--build-ui-text-muted);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.userdash-notes-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.userdash-notes-file-input {
+  display: none;
+}
+
+.userdash-notes-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.userdash-notes-button--primary {
+  background: white;
+  color: black;
+  border: none;
+}
+
+.userdash-notes-button--primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.userdash-notes-button--secondary {
+  background: transparent;
+  color: var(--build-ui-text);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.userdash-notes-button--secondary:hover {
+  border-color: var(--build-ui-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.userdash-notes-button--disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.userdash-notes-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* ── FHE Encryption Keys card ──────────────────────────────────────────────── */
+
+.userdash-fhe-card {
+  height: auto;          /* override the fixed notes-card height — key rows need room */
+  overflow: visible;
+}
+
+.userdash-api-card.userdash-api-page {
+  height: auto;
+  min-height: 18rem;
+  overflow: visible;
+  width: 100%;
+}
+
+.userdash-fhe-status {
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-muted);
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  white-space: nowrap;
+  background: transparent;
+}
+
+.userdash-fhe-status--ready { color: #7ee2a8; }
+.userdash-fhe-status--generating,
+.userdash-fhe-status--deriving,
+.userdash-fhe-status--uploading { color: #f3d97e; }
+.userdash-fhe-status--error { color: #f08a8a; }
+
+.userdash-fhe-action:not(.userdash-notes-button--compact) {
+  min-width: 5.5rem;
+}
+
+.userdash-fhe-action--copied {
+  color: #7ee2a8 !important;
+  border-color: rgba(126, 226, 168, 0.55) !important;
+}
+
+.userdash-fhe-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.userdash-fhe-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.userdash-fhe-label {
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-muted);
+}
+
+.userdash-fhe-key {
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.75rem;
+  color: var(--build-ui-text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userdash-fhe-size {
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.72rem;
+  color: var(--build-ui-text-subtle);
+  white-space: nowrap;
+}
+
+@media (max-width: 960px) {
+  .userdash-fhe-row {
+    display: flex;
+  }
+}
+
+/* ---- Withdrawal fee panel ---- */
+.userdash-fee-panel {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  font-family: var(--font-source-code), monospace;
+}
+.userdash-fee-modes {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.userdash-fee-mode {
+  color: var(--build-ui-text-subtle);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.userdash-fee-mode:hover { color: var(--build-ui-text-muted); }
+.userdash-fee-mode.active { color: #c6a15b; }
+.userdash-fee-breakdown { display: flex; flex-direction: column; gap: 0.3rem; font-size: 12px; }
+.userdash-fee-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--build-ui-text);
+}
+.userdash-fee-row.userdash-fee-sub { color: var(--build-ui-text-muted); }
+.userdash-fee-row.userdash-fee-total {
+  margin-top: 0.35rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--build-ui-text);
+  font-weight: 600;
+}
+.userdash-fee-warn { font-size: 12px; color: #e0a0a0; }
+.userdash-fee-quoting {
+  margin-top: 0.5rem;
+  font-size: 11px;
+  color: var(--build-ui-text-subtle);
+  font-family: var(--font-source-code), monospace;
+}
+
+/* Inline "Top up" inside the relay-fee line. Sits in .userdash-fee-quoting, so it inherits that
+   size and family and only overrides what a <button> resets: it must read as a link in a sentence,
+   not a second call-to-action competing with Confirm. */
+.userdash-link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--build-ui-text);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.userdash-link-button:hover:not(:disabled) {
+  color: var(--build-ui-text);
+}
+
+.userdash-link-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+  text-decoration: none;
+}
+
+.userdash-api-packs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1rem;
+}
+.userdash-api-pack {
+  flex: 1 1 140px;
+  text-align: left;
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--build-ui-text);
+  cursor: pointer;
+}
+.userdash-api-pack--active {
+  border-color: rgba(91, 141, 239, 0.55);
+  background: rgba(91, 141, 239, 0.12);
+}
+.userdash-api-pack-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+.userdash-api-pack-amount {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 11px;
+  font-family: var(--font-source-code), monospace;
+  color: var(--build-ui-text-muted);
+}
+.userdash-api-pack--custom {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+.userdash-api-custom-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+.userdash-api-custom-input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 12px;
+}
+.userdash-api-custom-input:focus {
+  outline: none;
+  border-color: rgba(91, 141, 239, 0.55);
+}
+.userdash-api-pack--custom .userdash-api-pack-amount {
+  margin-top: 0;
+}
+.userdash-api-fresh {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(126, 226, 168, 0.35);
+  background: rgba(126, 226, 168, 0.06);
+}
+.userdash-api-fresh-key {
+  display: block;
+  width: 100%;
+  margin: 0.5rem 0;
+  word-break: break-all;
+}
+.userdash-api-list {
+  margin-top: 1.25rem;
+}
+.userdash-api-list-title {
+  margin: 0 0 0.5rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--build-ui-text);
+}
+
+.userdash-agent {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.userdash-agent-code {
+  margin: 0.6rem 0 0.25rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.userdash-agent-copy {
+  font-size: 11px;
+  font-family: var(--font-source-code), monospace;
+}
+.userdash-agent-prompts {
+  list-style: none;
+  margin: 0.5rem 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.userdash-agent-prompts li {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--build-ui-text);
+  font-size: 0.8rem;
+  font-family: var(--font-source-code), monospace;
+}
+.userdash-agent-prompts li span {
+  min-width: 0;
+}
+.userdash-agent .userdash-api-list-title {
+  margin-top: 1.1rem;
+}
+
+.userdash-api-row {
+  margin-bottom: 0.5rem;
+}
+/* Feature-locked API surface. Reads as "not yet", not as an error — nothing has gone wrong. */
+.userdash-api-soon-badge {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid rgba(150, 200, 255, 0.4);
+  border-radius: 0.25rem;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #9fc4e8;
+}
+
+.userdash-api-soon-lead {
+  margin: 1rem 0 0.75rem;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--build-ui-text);
+}
+
+.userdash-api-soon-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--build-ui-text-subtle);
+}
+
+.userdash-api-error {
+  margin-top: 0.75rem;
+  font-size: 12px;
+  color: #f08a8a;
+}
+
+/* A paid-but-uncredited API purchase. Amber, not red: the money is safe and the action is
+   recoverable — styling it as an error reads as "your payment is gone", which is the opposite
+   of what happened. */
+.userdash-api-pending {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(240, 190, 110, 0.45);
+  border-radius: 0.5rem;
+  background: rgba(240, 190, 110, 0.07);
+  font-size: 12px;
+  color: #e9c893;
+}
+
+.userdash-api-pending p {
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+
+.userdash-api-pending-tx code {
+  font-size: 11px;
+  word-break: break-all;
+  opacity: 0.75;
+}
+
+.userdash-api-pending-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.userdash-api-pending-actions button {
+  padding: 0.35rem 0.75rem;
+  font: inherit;
+  color: inherit;
+  border: 1px solid rgba(240, 190, 110, 0.5);
+  border-radius: 0.35rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.userdash-api-pending-actions button:hover:not(:disabled) {
+  background: rgba(240, 190, 110, 0.14);
+}
+
+.userdash-api-pending-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.userdash-notes-card.userdash-migration-card {
+  height: auto;
+  min-height: 13.75rem;
+  overflow: visible;
+  border-color: rgba(198, 161, 91, 0.32);
+  background: rgba(198, 161, 91, 0.055);
+}
+.userdash-migration-button {
+  width: 100%;
+}

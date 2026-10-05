@@ -1,0 +1,211 @@
+/* Builder run confirm — compact centered card on dark backdrop */
+
+.builder-run-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: builderRunFadeIn 0.22s ease;
+  cursor: pointer;
+}
+
+.builder-run-overlay--dark {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.builder-run-card {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 26rem);
+  max-height: min(92dvh, 44rem);
+  margin: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(12, 12, 14, 0.96);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  cursor: default;
+}
+
+.builder-run-card-header {
+  position: relative;
+  flex-shrink: 0;
+  padding: 1.1rem 3.25rem 0.85rem 1.15rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.builder-run-card-heading {
+  min-width: 0;
+  text-align: center;
+}
+
+.builder-run-card-heading .builder-run-receipt-eyebrow {
+  text-align: center;
+}
+
+.builder-run-card-heading .builder-run-receipt-title {
+  margin: 0.2rem 0 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.builder-run-receipt-author {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-source-code), monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--build-ui-text-subtle);
+  text-align: center;
+}
+
+.builder-run-receipt-path {
+  margin: 0.55rem 0 0;
+  padding: 0 0.25rem;
+  font-family: var(--font-source-code), monospace;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--build-ui-text-subtle);
+  text-align: center;
+  word-break: break-word;
+}
+
+.builder-run-close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--build-ui-text);
+  cursor: pointer;
+  line-height: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.builder-run-close svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.builder-run-close:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: var(--build-ui-text);
+}
+
+.builder-run-close:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.builder-run-card-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem 1.15rem 0.85rem;
+}
+
+.builder-run-stats-grid--compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.builder-run-receipt-io-amount--estimate {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.15rem;
+}
+
+.builder-run-receipt-io-circa {
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--build-ui-text-subtle);
+  line-height: 1;
+}
+
+.builder-run-actions {
+  flex-shrink: 0;
+  padding: 0.85rem 1.15rem max(0.85rem, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.builder-run-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  padding: 0.9rem 1.25rem;
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  border-radius: 10px;
+  background: rgba(34, 197, 94, 0.14);
+  color: rgba(34, 197, 94, 0.95);
+  font-family: var(--font-source-code), monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.builder-run-submit:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.18);
+}
+
+.builder-run-submit:disabled,
+.builder-run-submit--disabled {
+  background: rgba(100, 100, 100, 0.1);
+  border-color: rgba(100, 100, 100, 0.3);
+  color: rgba(150, 150, 150, 0.75);
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+@keyframes builderRunFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .builder-run-overlay {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .builder-run-card {
+    width: 100%;
+    max-height: 94dvh;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}

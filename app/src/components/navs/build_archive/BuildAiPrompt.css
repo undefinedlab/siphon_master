@@ -1,0 +1,132 @@
+.build-ai-prompt {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0.75rem 0 0;
+  pointer-events: auto;
+}
+
+.build-ai-prompt-bubble {
+  width: min(680px, 100%);
+  margin: 0 auto 0.55rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px 12px 12px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.build-ai-prompt-bubble-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--build-ui-text-subtle);
+  font-family: var(--font-source-code), monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.build-ai-prompt-bubble-text {
+  margin: 0;
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.build-ai-prompt-inner {
+  width: min(680px, 100%);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.build-ai-prompt-disclaimer {
+  width: min(680px, 100%);
+  margin: 0.4rem auto 0;
+  padding: 0 0.25rem;
+  color: var(--build-ui-text-subtle);
+  font-family: var(--font-source-code), monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.build-ai-prompt-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 12px;
+  padding: 0.75rem 0.85rem;
+}
+
+.build-ai-prompt-input:focus {
+  outline: none;
+  border-color: var(--build-ui-text-subtle);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.build-ai-prompt-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.build-ai-prompt-input::placeholder {
+  color: var(--build-ui-text-subtle);
+}
+
+.build-ai-prompt-submit {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--build-ui-text);
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.build-ai-prompt-submit:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--build-ui-text-subtle);
+}
+
+.build-ai-prompt-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .build-ai-prompt {
+    padding-top: 0.5rem;
+  }
+
+  .build-ai-prompt-inner {
+    padding: 0.45rem;
+  }
+
+  .build-ai-prompt-input {
+    font-size: 11px;
+    padding: 0.65rem 0.7rem;
+  }
+
+  .build-ai-prompt-submit {
+    padding: 0.6rem 0.8rem;
+    font-size: 10px;
+  }
+}
