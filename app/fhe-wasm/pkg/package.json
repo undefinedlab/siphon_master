@@ -1,0 +1,18 @@
+{
+  "name": "siphon-fhe-wasm",
+  "type": "module",
+  "description": "In-browser FHE keygen/encrypt/decrypt for Siphon, byte-compatible with the Rust FHE engine",
+  "version": "0.1.0",
+  "files": [
+    "siphon_fhe_wasm_bg.wasm",
+    "siphon_fhe_wasm.js",
+    "siphon_fhe_wasm_bg.js",
+    "siphon_fhe_wasm.d.ts"
+  ],
+  "main": "siphon_fhe_wasm.js",
+  "types": "siphon_fhe_wasm.d.ts",
+  "sideEffects": [
+    "./siphon_fhe_wasm.js",
+    "./snippets/*"
+  ]
+}

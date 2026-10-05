@@ -1,0 +1,34 @@
+[package]
+name = "siphon-fhe-wasm"
+version = "0.1.0"
+edition = "2021"
+description = "In-browser FHE keygen/encrypt/decrypt for Siphon, byte-compatible with the Rust FHE engine"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+# Must match the FHE engine (fhe/) and payload generator: tfhe 0.5 integer radix.
+# The `*-client-js-wasm-api` features add the wasm seeder (WasmSeeder). tfhe's always-compiled
+# js_high_level_api references the shortint/boolean modules, so the full client set is required.
+tfhe = { version = "0.5", features = [
+    "integer-client-js-wasm-api",
+    "shortint-client-js-wasm-api",
+    "boolean-client-js-wasm-api",
+    "high-level-client-js-wasm-api",
+    # Forces a fixed FFT algorithm instead of runtime auto-tuning. The auto-tuner benchmarks
+    # with std::time::Instant, which panics on wasm32-unknown-unknown ("time not implemented").
+    "experimental-force_fft_algo_dif4",
+] }
+# Same wire format as the engine: bincode 1.3 + hex.
+bincode = "1.3"
+hex = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+# Browser RNG for tfhe's seeder (concrete-csprng) on wasm32.
+getrandom = { version = "0.2", features = ["js"] }
+console_error_panic_hook = "0.1"
+
+[profile.release]
+opt-level = 3
