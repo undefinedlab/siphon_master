@@ -1,0 +1,51 @@
+{
+  "kind": "mpc",
+  "ceremonyId": "v5-compliance-split-18977ad380ed48f1",
+  "status": "reviewed",
+  "contributions": 2,
+  "contributors": [
+    "swarnim (round 0001)",
+    "aadi (round 0002)"
+  ],
+  "beacon": {
+    "source": "Ethereum mainnet block 25911213 hash",
+    "hex": "18977ad380ed48f1a3e1f2f38e54ed0d2523ab11c83b04c8a7eb7ab339d040b2",
+    "iterations": 10,
+    "preAnnouncedAt": "2026-09-05T12:40:57Z",
+    "blockMinedAt": "2026-09-05T12:45:57Z",
+    "appliedAt": "2026-09-05T12:59:29Z",
+    "appliedToRound": "0002"
+  },
+  "circuits": [
+    "compliance1",
+    "compliance2",
+    "compliance3",
+    "compliance4",
+    "compliance5",
+    "compliance6",
+    "merge2",
+    "merge3",
+    "merge4",
+    "merge5",
+    "merge6",
+    "ragequit",
+    "split",
+    "swap",
+    "withdraw1",
+    "withdraw2",
+    "withdraw3",
+    "withdraw4",
+    "withdraw5",
+    "withdraw6"
+  ],
+  "note": "Phase-2 MPC over Hermez powersOfTau28_hez_final_20, for the PROGRAM_VERSION 5 compliance-split circuits (25 spend limbs + a separate 5-limb compliance proof). Supersedes hard-asp-r2, whose 14 keys are a different constraint system and cannot verify against the v5 routers. All 20 deltas were confirmed against the verifiers deployed on Base at kernel 0x240c7066a5ac7628bfC18446115B7673CEe9A35f.",
+  "artifactManifestSha256": "ea634527dc4420bd8744044247c0b59b866f2ad6b6f676ef15bb8a8343ff98fd",
+  "reviewedBy": "swarnim (coordinator and contributor #1 \u2014 NOT an independent review; see ceremony/V5-CEREMONY-REVIEW.md)",
+  "caveats": [
+    "self-reviewed-by-a-contributor",
+    "contribution-independence-not-externally-attested"
+  ],
+  "programVersion": 5,
+  "publicWidth": 25,
+  "compliancePublicWidth": 5
+}
