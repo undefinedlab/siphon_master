@@ -1,0 +1,36 @@
+---
+title: Notes & Vaults
+description: How private balances work inside Siphon.
+icon: Shield
+---
+
+A **note** is the unit of private balance inside a Siphon vault — not a visible wallet balance on-chain.
+
+## At a glance
+
+Each note represents a private claim on vault liquidity. Spending credentials are generated at deposit time and remain under your control. On-chain observers see pool activity, not which deposit you are spending.
+
+## Deposits
+
+When you deposit through the app:
+
+1. Assets move into the vault for the selected token.
+2. A private commitment is recorded in the pool state.
+3. Spend credentials are created and kept on your side of the trust boundary.
+
+## Spends
+
+Spending requires a zero-knowledge proof that you own a valid note, without revealing which one. The protocol marks a note as spent so it cannot be reused.
+
+## Spendable balance
+
+Your balance is reconstructed from private notes matched against indexed pool state, minus anything already spent. The app handles this reconciliation — you do not manage Merkle paths manually.
+
+## Vault operations
+
+| Operation | What it does |
+|-----------|--------------|
+| **Withdraw** | Exit to a recipient address |
+| **Merge** | Consolidate multiple notes |
+| **Swap** | Convert between supported assets privately |
+| **Split** | Divide one note into smaller pieces |

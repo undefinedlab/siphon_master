@@ -1,0 +1,27 @@
+---
+title: ZK Circuits
+description: Zero-knowledge circuits for vault operations.
+icon: GitBranch
+---
+
+Circuits are authored in `siphon-zk` and compiled to proving and verification material deployed on-chain.
+
+## Withdrawal
+
+Proves ownership of input notes against the current pool root, without revealing which leaves they are. Enforces spend uniqueness and value conservation.
+
+## Merge
+
+Consolidates multiple notes into one. No external transfer — inputs are retired and a single new note is created.
+
+## Swap
+
+Atomic private swap from one input note. Routing parameters are bound in the proof so execution cannot be redirected.
+
+## Split
+
+Divides one note into multiple slice notes for partial or portfolio-style execution.
+
+## Client proving
+
+Proofs are generated in the browser from published artifacts. An optional proving service can assist when local proving is impractical.

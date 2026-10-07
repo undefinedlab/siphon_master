@@ -1,0 +1,51 @@
+---
+title: Architecture
+description: End-to-end system design across repos and services.
+icon: Network
+---
+
+Siphon spans several deployable components integrated over HTTP and RPC.
+
+## Layer diagram
+
+```
+Browser (siphon-app)
+  · Wallet, vault deposit/withdraw
+  · Local strategy encryption
+  · Proof generation
+  · Visual builder + AI assistant
+        │
+        ▼
+Off-chain runtime
+  · Strategy scheduling and monitoring
+  · Encrypted trigger evaluation
+  · Optional server-side proving
+  · Vault index API
+        │
+        ├──────────────────┐
+        ▼                  ▼
+Indexer                On-chain contracts
+Postgres-backed        Entrypoint, vaults, verifiers
+```
+
+## Integration boundaries
+
+| Rule | Why |
+|------|-----|
+| Frontend → runtime only | Indexer can be replaced without app changes |
+| Components deploy independently | Separate release cycles per repo |
+| Same proof stack on supported EVM chains | One logic path; per-chain addresses only |
+
+## Strategy lifecycle
+
+1. **Deposit** — private note created; credentials stay local
+2. **Build** — canvas or AI produces a valid graph
+3. **Encrypt** — strategy bounds encrypted in browser
+4. **Register** — strategy armed for monitoring
+5. **Monitor** — runtime evaluates encrypted triggers vs oracle data
+6. **Trigger** — client confirms; user authorizes when ready
+7. **Execute** — private withdraw, swap, optional re-deposit
+
+## Read path for balances
+
+The app resolves spendable balance through the runtime index API, with a slower on-chain fallback if indexing is unavailable.

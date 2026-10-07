@@ -1,0 +1,30 @@
+---
+title: Networks & Assets
+description: Supported chains and tokens.
+---
+
+Siphon runs the same vault and proof stack on supported EVM networks. Only addresses, RPC endpoints, and chain IDs differ per deployment.
+
+## Supported networks
+
+| Network | Role |
+|---------|------|
+| **Base Mainnet** | Primary production chain |
+| **Ethereum Sepolia** | Testnet / development |
+
+## Supported assets
+
+Per EVM chain:
+
+| Asset | Type |
+|-------|------|
+| **ETH** | Native |
+| **USDC** | ERC-20 |
+
+## Switching networks
+
+In the dapp, use the chain toggle. Your wallet must be on the selected network before signing transactions.
+
+## Contract layout
+
+Each chain deploys an entrypoint, per-asset vaults, and proof verifiers for the core pool operations. Exact addresses are resolved at deploy and index time.

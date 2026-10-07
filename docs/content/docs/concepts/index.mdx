@@ -1,0 +1,17 @@
+---
+title: Core Concepts
+description: Private balances and how Siphon handles strategy privacy.
+---
+
+These pages explain the ideas behind Siphon's vault model and privacy guarantees — without diving into implementation specifics.
+
+## Topics
+
+<Cards>
+  <Card title="Notes & Vaults" href="/docs/concepts/notes" description="Private balances, deposits, and spends." />
+  <Card title="Privacy Model" href="/docs/concepts/privacy" description="What stays hidden, what is visible, and trust assumptions." />
+</Cards>
+
+## Why it matters
+
+Siphon is not a standard wallet with a single visible on-chain number. Funds live as private notes inside a shared pool. Strategy logic can stay encrypted until conditions are met. That separation is what makes private execution possible.

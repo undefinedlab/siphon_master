@@ -1,0 +1,42 @@
+---
+title: Privacy Model
+description: What Siphon hides, what remains visible, and trust assumptions.
+icon: Lock
+---
+
+Siphon combines several privacy layers. Each reduces a different kind of on-chain leakage.
+
+## Privacy stack
+
+| Layer | Role |
+|-------|------|
+| **Zero-knowledge proofs** | Spend from the pool without linking to a specific deposit |
+| **Encrypted strategies** | Keep trigger logic and bounds off public chain state |
+| **Client-side credentials** | Sensitive material stays with the user, not on servers |
+| **Authenticated sessions** | Off-chain services verify wallet identity without holding signing keys |
+
+## What stays private
+
+- Which deposit a withdrawal came from within the pool
+- Strategy parameters and trigger levels before execution
+- Internal note linkage and spend credentials
+
+## What is visible
+
+- Pool liquidity and state updates
+- That a spend occurred (without full deposit linkage)
+- Recipients and swap outcomes bound by proofs at execution time
+- Timing and network metadata (inherent to public chains)
+
+## Trust assumptions
+
+| Component | Assumption |
+|-----------|------------|
+| Your device | Protects local credentials and signing context |
+| Runtime services | Process encrypted payloads; cannot infer strategy bounds without client cooperation |
+| Smart contracts | Enforce proof rules; emergency controls may pause new deposits |
+| Price oracles | Supply reference data for trigger evaluation |
+
+## Privacy limits
+
+Siphon provides **pool-style privacy**, not absolute anonymity. Correlation via timing, amounts, and public addresses is still possible. The design assumes adversaries can observe chain state — not that cryptography is broken.

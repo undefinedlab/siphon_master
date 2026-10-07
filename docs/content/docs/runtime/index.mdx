@@ -1,0 +1,39 @@
+---
+title: Trade Executor
+description: Off-chain strategy runtime and encrypted evaluation.
+icon: Cpu
+---
+
+The **trade executor** is the off-chain runtime for encrypted strategies.
+
+## Responsibilities
+
+- Register and monitor active strategies
+- Poll oracle price data on a schedule
+- Evaluate encrypted trigger bounds without decrypting them server-side
+- Coordinate private withdraw, swap, and note lifecycle on trigger
+- Expose vault index reads for balance reconciliation
+
+## Evaluation flow
+
+1. Runtime holds encrypted strategy bounds only
+2. Oracle data is compared under encryption
+3. A trigger result is returned to the client
+4. **You confirm** before execution proceeds
+5. Settlement runs through the private vault path you defined
+
+## Note lifecycle
+
+Notes move through pending and spent states so asynchronous execution cannot double-spend.
+
+## Proving support
+
+Optional server-side proof generation when browser proving is impractical.
+
+## Deployment
+
+Typically containerized alongside Postgres. Shares database infrastructure with the indexer in production.
+
+## API access
+
+Off-chain requests are authenticated via wallet signatures. Signing keys never leave your wallet.

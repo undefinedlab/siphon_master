@@ -1,0 +1,41 @@
+---
+title: Builder
+description: Visual strategy composition and AI-assisted flows.
+icon: LayoutDashboard
+---
+
+The Siphon **builder** is a block-based canvas for composing private trading strategies without writing code.
+
+## Block types
+
+| Block | Purpose |
+|-------|---------|
+| **Deposit** | Fund the vault with ETH or USDC |
+| **Strategy** | Limit, stop-loss, take-profit, or range triggers (encrypted) |
+| **Schedule** | Time gates (e.g. wait before arming a trigger) |
+| **Loop** | Recurring execution — DCA-style swaps until funds are exhausted |
+| **Swap** | Explicit token conversion |
+| **Withdraw** | Exit to a public address via private proof |
+
+Blocks connect into a directed graph. The runtime validates structure before execution.
+
+## AI assistant
+
+Describe strategies in plain language:
+
+- *"Deposit USDC and limit buy ETH at my target price"*
+- *"DCA loop: swap USDC to ETH every 24 hours until empty"*
+- *"Stop loss when price hits my stop, swap to USDC and withdraw"*
+
+The assistant maps prompts to valid block graphs.
+
+## Smoke test vs Run
+
+| Mode | Behavior |
+|------|----------|
+| **Smoke test** | Sequential validation on the canvas — no live on-chain execution |
+| **Run** | Port canvas values into a funded flow and register for monitoring |
+
+## Encrypted strategies
+
+Trigger bounds are encrypted in the browser before registration. The runtime stores ciphertext only. Price evaluation runs against live oracle data without decrypting your parameters on the server.

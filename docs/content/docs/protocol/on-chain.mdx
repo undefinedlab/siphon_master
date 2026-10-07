@@ -1,0 +1,41 @@
+---
+title: On-Chain
+description: Entrypoint, vaults, and verifier contracts.
+icon: Blocks
+---
+
+Smart contracts live in `siphon-contracts` (Solidity on EVM).
+
+## Entrypoint
+
+The Entrypoint is the user-facing router:
+
+- **`initializeVaults`** — deploy vault per asset
+- **`deposit`** — route ETH or ERC-20 into vaults; mint commitments
+- **`withdraw`** — verify proofs; send to bound recipient
+- **Pause** — deposits and swaps may be pausable; withdrawals remain available
+
+## Vault + pool state
+
+Each vault maintains a commitment tree for private notes. Spent notes are tracked so they cannot be reused.
+
+## Verifier families
+
+| Family | Use |
+|--------|-----|
+| Withdrawal | Send to recipient + optional change note |
+| Merge | Consolidate notes in-vault |
+| Swap | Private swap with bound routing params |
+| Split | Divide one note into multiple slices |
+
+Public outputs are fixed at verification — relayers cannot substitute recipients, routes, or slippage floors.
+
+## DEX routing
+
+Swaps route through integrated DEX liquidity on EVM. Pool, destination token, and minimum output are proof-bound.
+
+## Security notes
+
+- Only Entrypoint may call state-changing vault functions
+- Non-standard transfer tokens handled conservatively at deposit
+- Two-step ownership transfer; emergency pause on state-advancing entry points

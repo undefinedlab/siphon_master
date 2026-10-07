@@ -1,0 +1,31 @@
+---
+title: Chain Indexer
+description: Indexing service for pool state and vault deposits.
+icon: Database
+---
+
+`siphon-indexer` indexes on-chain privacy-pool state into PostgreSQL for fast reads.
+
+## Why it exists
+
+Reconstructing spendable balance from raw chain history alone is slow on public RPC endpoints. The indexer scans once, keeps state live, and serves reads over HTTP.
+
+## What it indexes
+
+Pool leaf inserts and vault deposit events across supported vaults on each deployed network.
+
+## Read path
+
+The frontend resolves balance data through the runtime API backed by the indexer, with an on-chain fallback if indexing is unavailable.
+
+## Operations
+
+See the `siphon-indexer` repo for setup, deployment, and API reference.
+
+## Failure modes
+
+| Scenario | Behavior |
+|----------|----------|
+| Indexer down | Slower on-chain fallback |
+| Backfill incomplete | Balances may under-count until caught up |
+| Chain reorg | Index rolls back affected rows |

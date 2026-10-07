@@ -1,0 +1,46 @@
+---
+title: Overview
+description: Siphon Protocol — private, composable DeFi execution.
+---
+
+**Siphon Protocol** is a platform for private DeFi execution — *trade without a trace*.
+
+It lets traders deposit funds into an encrypted vault, define trading strategies with hidden parameters, and execute swaps and withdrawals without exposing intent, positions, or strategy logic on-chain.
+
+## What Siphon unifies
+
+Siphon combines three capabilities that are usually fragmented:
+
+| Layer | What it does |
+|-------|----------------|
+| **Privacy vault** | Private commitments on-chain; spend authority stays with the depositor |
+| **Strategy builder** | Visual flows and AI-assisted composition for limits, DCA, stops |
+| **Encrypted runtime** | Trigger evaluation against live market data without exposing bounds |
+
+## The core promise
+
+Your strategies, order sizes, and trigger prices should not be visible to front-runners, MEV bots, or on-chain surveillance.
+
+<Cards>
+  <Card title="Getting Started" href="/docs/getting-started" description="Networks, wallets, and your first deposit." />
+  <Card title="Core Concepts" href="/docs/concepts" description="Private balances and the privacy model." />
+  <Card title="Architecture" href="/docs/protocol/architecture" description="How the stack fits together end to end." />
+  <Card title="Launch App" href="https://siphon.money" description="Open the Siphon dapp." />
+</Cards>
+
+## Repository map
+
+Siphon is a multi-repo monorepo. Each component is independently deployable:
+
+| Repo | Role |
+|------|------|
+| `siphon-app` | Dapp, builder, client-side crypto |
+| `siphon-contracts` | On-chain vaults and verifiers |
+| `siphon-zk` | Zero-knowledge circuits |
+| `siphon-fhe` | Encrypted runtime and trade executor |
+| `siphon-indexer` | Chain indexer for pool state |
+| `siphon-docs` | This documentation site |
+
+## Mission
+
+> We are building Siphon Protocol — a unified platform for private, anonymous DeFi execution. Our goal is to make cryptographic privacy as accessible and composable as modern trading infrastructure.
