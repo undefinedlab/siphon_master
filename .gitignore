@@ -52,6 +52,11 @@ id_ed25519
 *.sqlite3
 instance/
 
+# ZK ceremony / proving blobs (sources live in zkv2/; app may ship selected client keys)
+*.zkey
+*.ptau
+artifacts-from-v5/
+
 # OS / editor
 .DS_Store
 Thumbs.db

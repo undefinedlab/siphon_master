@@ -1,0 +1,28 @@
+name: siphon-zkv2 CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  omega-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      - name: No v2 ASP root ring (GF-M4)
+        run: npm run check:no-v2-asp
+      - name: Manifest pin fields + drift (GF-M5 / Z-5)
+        run: npm run check:pins
+      - name: VK nPublic registry (Z-6)
+        run: npm run check:vk
+      - name: spend-core reference validator (Z-6)
+        run: cargo test -p spend-core
+      - name: Circom + SDK DELTA regressions
+        run: npm test

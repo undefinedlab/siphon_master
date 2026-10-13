@@ -1,0 +1,14 @@
+node_modules/
+target/
+artifacts/
+ceremony/round_*/
+ceremony/final/
+ceremony/r1cs/
+ceremony/*.tar.gz
+ceremony/*.ptau
+*.wtns
+.DS_Store
+
+# Local v5 ceremony dump (large zkeys); not part of the SDK source tree
+artifacts-from-v5/
+

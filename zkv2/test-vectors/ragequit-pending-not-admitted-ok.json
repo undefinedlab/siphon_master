@@ -1,0 +1,9 @@
+{
+  "action": "Ragequit",
+  "labelStatus": "Pending",
+  "labelInAsp": false,
+  "labelRevokedInSmt": false,
+  "admittedRootPublic": true,
+  "revokedRootPublic": true,
+  "expect": "ok"
+}

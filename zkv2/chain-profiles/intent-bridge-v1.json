@@ -1,0 +1,30 @@
+{
+  "profileId": "intent-bridge-v1",
+  "description": "Cross-vault intent / bridge hop profile. Not a privacy pool. Moves value between per-chain Siphon vaults with an honest public bridge leg (Li.Fi-class), then re-enters private notes on the destination vault. NOTE: Solana source vault is PARKED — use solana-wallet-fund-base-v1 (/solana/fundBase/plan) for Phantom→Base.",
+  "status": "scaffold",
+  "solanaSourceVault": "parked",
+  "notAVault": true,
+  "privacyPhysics": {
+    "sourceVault": "private ZK spend (withdraw) on chain A",
+    "bridgeLeg": "public — amount/route may be linkable",
+    "destinationVault": "deposit + ASP screen → private notes on chain B"
+  },
+  "adapters": {
+    "preferred": ["lifi", "across", "native-bridge"],
+    "role": "pluggable settlement for the public hop only"
+  },
+  "hop": {
+    "steps": [
+      "spend WITHDRAW on source vault (proof-first)",
+      "bridge via selected adapter to destination chain/asset",
+      "deposit into destination vault with userSalt + precommitment",
+      "ASP /screen on destination chainId"
+    ],
+    "atomicCrossNote": false,
+    "programVersionBump": "required if guest gains bridge-specific limbs later"
+  },
+  "chainBindings": {
+    "evm-v1": "VaultKernel withdraw → ERC-20 → Li.Fi",
+    "solana-v1": "siphon-vault withdraw → SPL → Li.Fi/Jupiter bridge route"
+  }
+}

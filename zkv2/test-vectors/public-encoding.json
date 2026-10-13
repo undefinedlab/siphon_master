@@ -1,0 +1,37 @@
+{
+  "PUBLIC_WIDTH": 25,
+  "fieldNames": [
+    "action",
+    "inputCount",
+    "stateRoot",
+    "admittedRoot",
+    "revokedRoot",
+    "primaryValue",
+    "secondaryValue",
+    "outCommitment",
+    "outLabel",
+    "nullifierHash0",
+    "nullifierHash1",
+    "nullifierHash2",
+    "nullifierHash3",
+    "nullifierHash4",
+    "nullifierHash5",
+    "payeeId",
+    "programVersion",
+    "mux17",
+    "mux18",
+    "mux19",
+    "mux20",
+    "mux21",
+    "mux22",
+    "mux23",
+    "mux24"
+  ],
+  "_muxSemantics": {
+    "merge": "public[5]=public[6]=0; amount lives in outCommitment only (3.4.1)",
+    "withdraw": "mux17 = assetId (D1)",
+    "swap": "indices 17-23: pool, dstToken, fee, minOut, outputPre, destC, srcAssetId (D1)",
+    "split": "mux17 = splitRoot",
+    "ragequit": "mux17 = claimant payeeId; mux18 = assetId; public[3]/[4] = current roots; public[8] = 0"
+  }
+}

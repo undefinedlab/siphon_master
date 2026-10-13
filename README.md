@@ -11,12 +11,13 @@
 | Path | Role |
 |------|------|
 | [`app/`](./app) | Next.js client — wallet UX, browser FHE keygen/encrypt/decrypt, Groth16 prove UI, vault interactions |
-| [`contracts/`](./contracts) | PROTOCOL 3.4 VaultKernel (EVM Foundry + Solana ZK vault) — proof-first `spend`, ComplianceHub roots |
+| [`contracts/`](./contracts) | PROTOCOL 3.4+ VaultKernel (EVM Foundry + Solana ZK vault) — proof-first `spend`, ComplianceHub roots |
+| [`zkv2/`](./zkv2) | Circom Groth16 spend circuits + Rust `spend-core` / SDK (**sources only** — no zkey/ptau artifacts in-tree) |
 | [`fhe/`](./fhe) | Off-chain stack — tfhe-rs evaluation engine, trade executor, API gateway, keepers / relayers |
 | [`asp/`](./asp) | Association Set Provider — screening, admit/revoke SMTs, deposit watcher, ComplianceHub publisher |
 | [`docs/`](./docs) | Public documentation site (Fumadocs) for `docs.siphon.money` |
 
-This is the **judge / review surface**: one private repo, five production packages, no “demo-only mock crypto” on the spend or strategy path.
+This is the **judge / review surface**: one private repo, six production packages, no “demo-only mock crypto” on the spend or strategy path. Client-facing proving keys used by the app live under `app/public/zk/`; the normative circuit/prover sources live in `zkv2/` without bulky ceremony binaries.
 
 ---
 
@@ -25,7 +26,7 @@ This is the **judge / review surface**: one private repo, five production packag
 | Layer | Implementation | Not a mock |
 |-------|----------------|------------|
 | **Strategy privacy** | Browser generates TFHE client/server keys; bounds encrypted client-side; engine evaluates **homomorphically** and returns ciphertext | Server never holds the client key; plaintext bounds never leave the device |
-| **Private spend** | Circom Groth16 circuits + proving keys under `app/public/zk/` | On-chain verifiers check real proofs against registered VKs |
+| **Private spend** | Circom sources + `spend-core` in `zkv2/`; app proving keys under `app/public/zk/` | On-chain verifiers check real proofs against registered VKs |
 | **Vault kernel** | `VaultKernel.spend(publicInputs[25], proof, actionCalldata)` | Amounts, nullifiers, roots, and payee binding come from verified public inputs |
 | **Compliance** | ASP builds admit + revoke trees; hub publishes current roots on a timed admit epoch | Revocation is SMT non-inclusion against the live `revokedRoot` — labels are not leaked on-chain to close sets |
 | **Execution** | Trade executor submits chain txs only after browser-authorized decrypt of the FHE trigger bit | Browser-in-the-loop by design for the FHE path |
@@ -43,6 +44,7 @@ siphon_master/
 ├── STATUS.md              ← what’s live vs infra remaining
 ├── app/                   ← product UI + WASM FHE + ZK artifacts
 ├── contracts/             ← EVM + Solana on-chain kernel
+├── zkv2/                  ← Circom + spend-core (no zkey/ptau blobs)
 ├── fhe/                   ← tfhe-rs engine + executors
 ├── asp/                   ← association set / compliance
 └── docs/                  ← documentation site

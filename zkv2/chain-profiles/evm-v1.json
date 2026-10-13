@@ -1,0 +1,42 @@
+{
+  "profileId": "evm-v1",
+  "description": "Normative EVM chain binding for PROTOCOL.md §16. First production profile (v3.4.1).",
+  "field": "BN254",
+  "vaultInstance": {
+    "encoding": "evm-address-20",
+    "vaultScopeId": "Poseidon(DOMAIN_CHAIN_EVM, chainId, uint160(vaultAddress))"
+  },
+  "labelMint": {
+    "formula": "Poseidon(Poseidon(DOMAIN_VAULT_SCOPE, vaultScopeId, depositNonce), userSalt)",
+    "userSalt": "non-zero field; never passed as raw label",
+    "forbidUserSuppliedLabel": true
+  },
+  "payee": {
+    "rawEncoding": "evm-address-20-zero-padded-to-32-bytes-be",
+    "payeeField": "BigUint(raw32) mod FIELD",
+    "payeeId": "Poseidon(DOMAIN_PAYEE, payeeField)"
+  },
+  "swapMux": {
+    "indices": [17, 18, 19, 20, 21, 22],
+    "fields": {
+      "17": "pool",
+      "18": "dstToken",
+      "19": "fee",
+      "20": "minAmountOut",
+      "21": "outputPrecommitment",
+      "22": "destCommitment"
+    },
+    "router": "uniswap-v4-entrypoint",
+    "destinationLabel": "private destLabel == inLabel[0] (not a public limb)",
+    "destinationCommitment": "publicInputs[22] == commitment(minAmountOut, destLabel, publicInputs[21])"
+  },
+  "verificationArtifact": {
+    "type": "groth16-bn254",
+    "note": "Circom Groth16 spend proofs via SpendActionGroth16Router + per-action verifiers."
+  },
+  "onChainBinding": {
+    "spendEntry": "Vault.spend(publicInputs, proof, actionCalldata)",
+    "payeePayout": "require(publicInputs[15] == payeeId(rawPayeeFromCalldata)); transfer(rawPayee)",
+    "ragequitPayout": "require(publicInputs[17] == payeeId(rawPayeeFromCalldata)); transfer(rawPayee)"
+  }
+}

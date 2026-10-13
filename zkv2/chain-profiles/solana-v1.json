@@ -1,0 +1,86 @@
+{
+  "profileId": "solana-v1",
+  "description": "Solana chain binding for PROTOCOL core. Same 25-limb guest as evm-v1; identity/mux/verify via profile. Verify artifact locked: groth16-bn254-solana-altbn128-v1.",
+  "status": "profile-pinned",
+  "field": "BN254",
+  "vaultInstance": {
+    "encoding": "solana-pubkey-32",
+    "vaultScopeId": "Poseidon(DOMAIN_CHAIN_SOL, programIdField, vaultPdaField)",
+    "programIdField": "BigUint(programId32) mod FIELD",
+    "vaultPdaField": "BigUint(vaultPda32) mod FIELD",
+    "instancePack": "programId(32) || vaultPda(32)"
+  },
+  "labelMint": {
+    "formula": "Poseidon(Poseidon(DOMAIN_VAULT_SCOPE, vaultScopeId, depositNonce), userSalt)",
+    "userSalt": "non-zero field; never passed as raw label",
+    "forbidUserSuppliedLabel": true,
+    "note": "Identical guest semantics to evm-v1; only vaultScopeId domain/inputs differ."
+  },
+  "payee": {
+    "rawEncoding": "solana-pubkey-32",
+    "payeeField": "Poseidon(DOMAIN_PAYEE_SOL_COMPRESS, BigUint(pubkey32) mod FIELD)",
+    "payeeId": "Poseidon(DOMAIN_PAYEE, payeeField)",
+    "domainPinned": "DOMAIN_PAYEE_SOL_COMPRESS = 7"
+  },
+  "swapMux": {
+    "indices": [17, 18, 19, 20, 21, 22],
+    "fields": {
+      "17": "routeIdOrAmmProgram",
+      "18": "dstMint",
+      "19": "routeMeta",
+      "20": "minAmountOut",
+      "21": "outputPrecommitment",
+      "22": "destCommitment"
+    },
+    "router": "jupiter-v6-style-adapter",
+    "destinationLabel": "private destLabel == inLabel[0] (not a public limb)",
+    "destinationCommitment": "publicInputs[22] == commitment(minAmountOut, destLabel, publicInputs[21])"
+  },
+  "assetId": {
+    "encoding": "spl-mint-pubkey-field",
+    "formula": "BigUint(mintPubkey32) mod FIELD",
+    "nativeSol": "So11111111111111111111111111111111111111112",
+    "nativeSolNote": "WSOL mint — pinned for solana-v1 assetId"
+  },
+  "programVersion": {
+    "guestLogicId": "spend-core-v3",
+    "chainProfileId": "solana-v1",
+    "verifyArtifactId": "groth16-bn254-solana-altbn128-v1"
+  },
+  "verificationArtifact": {
+    "type": "groth16-bn254-solana-altbn128-v1",
+    "status": "locked",
+    "verifyArtifactId": "groth16-bn254-solana-altbn128-v1",
+    "decision": "Circom Groth16 (same zkeys as Base) + Solana alt_bn128 syscalls; pending-inputs PDA for 25 limbs; 14 VK accounts routed like SpendActionGroth16Router. Relayer-trust and pure-BPF fakes forbidden.",
+    "publicInputsDelivery": "pending-inputs PDA (25×32 bytes) — proof-only in spend tx; classic 1232B envelope cannot hold 25 limbs + proof inline",
+    "vkStorage": "one account (or const) per action circuit; route like SpendActionGroth16Router",
+    "cuBudgetNote": "Light benches ~78–109k CU for 1–8 publics; expect ~180–200k for 25 — re-bench Siphon vkeys before mainnet",
+    "forbidden": [
+      "fake-or-trust-relayer-as-proof",
+      "pure-bpf-groth16-without-syscalls",
+      "changing-25-limb-guest-to-shrink-publics",
+      "structural-accept-backend-in-release"
+    ],
+    "research": "../solana/VERIFY-RESEARCH.md",
+    "candidatesRetiredAsPrimary": [
+      "compressed-proof-wrap-verified-offchain-attested-onchain",
+      "alternate-snark-artifact-same-25-limbs"
+    ]
+  },
+  "onChainBinding": {
+    "spendEntry": "siphon_vault::spend(public_inputs[25], proof_bytes, remaining_accounts)",
+    "payeePayout": "require(publicInputs[15] == payeeId(rawPayeePubkey)); transfer SPL/native to pubkey",
+    "ragequitPayout": "require(publicInputs[17] == payeeId(rawPayeePubkey)); transfer to pubkey",
+    "accounts": {
+      "vault": "PDA holding state root, depositNonce, vaultScopeId, pauses",
+      "compliance": "PDA or shared account: admittedRoot + revokedRoot",
+      "nullifierStore": "PDA-per-nullifier owned by vault",
+      "assetVault": "token accounts per allowed mint",
+      "verifier": "alt_bn128 syscalls + 14 VK accounts"
+    }
+  },
+  "adapters": {
+    "asset": "SplAssetAdapter (measured token-account deltas)",
+    "settlement": "JupiterSettlementAdapter (mux 17–22 → route accounts)"
+  }
+}

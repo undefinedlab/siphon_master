@@ -1,0 +1,15 @@
+[package]
+name = "siphon-prove"
+version = "0.1.0"
+edition = "2021"
+description = "T0 local prover CLI — native guest simulation (M2)"
+
+[[bin]]
+name = "siphon-prove"
+path = "src/main.rs"
+
+[dependencies]
+spend-core = { path = "../../spend-core" }
+spend-guest = { path = "../../spend-guest", features = ["native"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }

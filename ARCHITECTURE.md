@@ -67,15 +67,18 @@ End-to-end map of how **real cryptography** and services connect. This document 
 
 | Concern | Package |
 |---------|---------|
-| UI + WASM FHE + ZK artifacts | `app/` |
+| UI + WASM FHE + client ZK artifacts | `app/` |
 | On-chain kernel & profiles | `contracts/` |
+| Circom circuits, PROTOCOL, spend-core, prove SDK | `zkv2/` |
 | Homomorphic eval + execution services | `fhe/` |
 | Screening trees & hub publisher | `asp/` |
 | Human docs site | `docs/` |
 
 ## Related normative docs (in-package)
 
+- `zkv2/docs/PROTOCOL.md` (normative), `ARCHITECTURE-GREENFIELD.md`, `OMEGA-CLOSURE.md`
 - `contracts/docs/ARCHITECTURE.md`, `PRIVACY.md`, `DEPLOY.md`, `OMEGA-CLOSURE.md`
 - `asp/docs/ARCHITECTURE.md`, `COMPLIANCE_FLOWS.md`
 - `fhe/README.md`, `AWS_DEPLOYMENT.md`
-- Protocol binding: Circom / spend-core lives alongside the wider Siphon ZK stack; this monorepo carries the **product + chain + FHE + ASP** review surface.
+
+**Artifact split:** `zkv2/` is **source-only** (circuits, Rust core, SDK, test vectors) — no `*.zkey` / `*.ptau` / `artifacts-from-v5`. Runtime proving keys used by the product UI remain under `app/public/zk/` for review.

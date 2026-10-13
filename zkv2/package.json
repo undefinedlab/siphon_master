@@ -1,0 +1,45 @@
+{
+  "name": "siphon-zkv2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Siphon Circom Groth16 + spend-core reference (canonical successor to siphon-zk)",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "build:dev": "bash scripts/build.sh",
+    "check:vk": "node scripts/check-vk.cjs",
+    "check:pins": "node scripts/check-pins.cjs",
+    "check:no-v2-asp": "bash scripts/check-no-v2-asp-ring.sh",
+    "pin:hashes": "node scripts/pin-artifact-hashes.cjs",
+    "export:verifiers": "node scripts/export-verifiers.cjs",
+    "generate:action-proof": "node scripts/generate-action-proof.cjs",
+    "export:vectors": "node scripts/export-test-vectors.mjs",
+    "prove": "cargo run -p siphon-prove --",
+    "prove:bench": "cargo run -p siphon-prove --release --",
+    "test": "node node_modules/.bin/jest --runInBand --forceExit",
+    "test:sdk": "node node_modules/.bin/jest --runInBand --forceExit test/sdk-m6.test.js",
+    "test:circom": "node node_modules/.bin/jest --runInBand --forceExit test/withdrawal.test.js",
+    "bench:prove": "node scripts/bench-prove.cjs",
+    "prove:groth16": "node scripts/prove-groth16.cjs",
+    "test:guest": "cargo test -p spend-guest",
+    "ceremony:init": "bash scripts/mpc-phase2.sh init",
+    "ceremony:verify": "bash scripts/mpc-phase2.sh verify"
+  },
+  "dependencies": {
+    "circomlib": "2.0.5",
+    "circomlibjs": "0.1.7",
+    "snarkjs": "0.7.5"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/test/**/*.test.js"
+    ],
+    "testTimeout": 300000
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

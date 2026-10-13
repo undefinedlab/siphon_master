@@ -14,7 +14,8 @@ What remains is **final infrastructure deployment and hardening** — ops work, 
 |------|------------------|
 | VaultKernel spend path (EVM) | `contracts/evm` — Foundry tests, adapters, verifier registry |
 | Solana ZK vault sources | `contracts/solana/programs/siphon-vault-zk` |
-| Groth16 artifacts | `app/public/zk/**` — WASM, verification keys, proving keys |
+| Groth16 circuit / prover sources | `zkv2/` — Circom, spend-core, SDK, PROTOCOL (no bulky zkey/ptau in-tree) |
+| Groth16 client artifacts | `app/public/zk/**` — WASM, verification keys, proving keys |
 | Browser TFHE | `app/fhe-wasm` + app client flows |
 | Homomorphic engine | `fhe/fhe` (Rust / tfhe-rs / Axum) |
 | Trade executor + gateway | `fhe/trade-executor`, `fhe/api-gateway` |

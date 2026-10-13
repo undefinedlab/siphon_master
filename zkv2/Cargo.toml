@@ -1,0 +1,3 @@
+[workspace]
+members = ["spend-core", "spend-guest", "prover/cli"]
+resolver = "2"

@@ -1,0 +1,12 @@
+{
+  "measuredAmount": "1000",
+  "claimedAmount": "1999",
+  "userSalt": "4242",
+  "assetId": "4096",
+  "nullifier": "501",
+  "secret": "502",
+  "depositNonce": 7,
+  "vaultScopeId": "7227663869249605636356830387392157219843399202112120096156398924344732573555",
+  "chainProfile": "evm-v1",
+  "chainId": 84532
+}
