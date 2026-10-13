@@ -89,6 +89,14 @@ ENV NEXT_PUBLIC_ALLOW_MOCK_TEE=$NEXT_PUBLIC_ALLOW_MOCK_TEE \
 RUN bun run typecheck
 RUN bun run build && test -f .next/standalone/server.js
 
+# Flattened snarkjs tree via npm (bun nests wasmcurves/@iden3 under snarkjs differently;
+# incomplete copies make /api/solana/pipeline-prove return 500 HTML).
+FROM node:22-bookworm-slim AS snarkjs-deps
+WORKDIR /prove
+# pipeline-prove needs snarkjs + circomlibjs (Poseidon) and their flattened transitive deps.
+RUN npm init -y >/dev/null \
+  && npm install --omit=dev snarkjs@0.7.5 circomlibjs@0.1.7 @iden3/binfileutils@0.0.12
+
 FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
@@ -101,21 +109,20 @@ RUN groupadd -g 10001 siphon && useradd -u 10001 -g siphon -s /bin/bash siphon
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=siphon:siphon /app/.next/standalone ./
 COPY --from=builder --chown=siphon:siphon /app/.next/static ./.next/static
-# serverExternalPackages: snarkjs is externalized — copy it AND its runtime deps (hoisted by bun).
-# Missing @iden3/binfileutils crashes /api/solana/pipeline-prove with 500 HTML (executor then
-# JSON-decodes garbage and mid-pipeline hangs after hop 0).
-COPY --from=builder /app/node_modules/snarkjs ./node_modules/snarkjs
-COPY --from=builder /app/node_modules/ffjavascript ./node_modules/ffjavascript
-COPY --from=builder /app/node_modules/@iden3 ./node_modules/@iden3
-COPY --from=builder /app/node_modules/@noble ./node_modules/@noble
-COPY --from=builder /app/node_modules/r1csfile ./node_modules/r1csfile
-COPY --from=builder /app/node_modules/fastfile ./node_modules/fastfile
-COPY --from=builder /app/node_modules/circom_runtime ./node_modules/circom_runtime
-COPY --from=builder /app/node_modules/bfj ./node_modules/bfj
-COPY --from=builder /app/node_modules/ejs ./node_modules/ejs
-COPY --from=builder /app/node_modules/logplease ./node_modules/logplease
-RUN test -f node_modules/@iden3/binfileutils/package.json \
-  || (echo "missing @iden3/binfileutils in runner image" >&2; ls -la node_modules/@iden3 || true; exit 1)
+# Merge npm-flattened snarkjs/circomlibjs deps into standalone node_modules.
+# Also pull circomlibjs from the bun builder tree (already in package.json) in case npm nest differs.
+COPY --from=snarkjs-deps /prove/node_modules /tmp/snarkjs_modules
+COPY --from=builder /app/node_modules/circomlibjs /tmp/circomlibjs
+RUN mkdir -p node_modules \
+  && cp -a /tmp/snarkjs_modules/. node_modules/ \
+  && rm -rf /tmp/snarkjs_modules \
+  && rm -rf node_modules/circomlibjs \
+  && cp -a /tmp/circomlibjs node_modules/circomlibjs \
+  && rm -rf /tmp/circomlibjs \
+  && test -f node_modules/snarkjs/package.json \
+  && test -f node_modules/circomlibjs/package.json \
+  && test -f node_modules/@iden3/binfileutils/package.json \
+  && node -e "require('snarkjs'); require('@iden3/binfileutils'); console.log('snarkjs ok')"
 
 USER siphon
 EXPOSE 3000

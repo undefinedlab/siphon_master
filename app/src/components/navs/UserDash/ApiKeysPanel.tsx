@@ -56,18 +56,51 @@ function ApiKeysWrongChain() {
         <span className="userdash-balance-title">SIPHON API</span>
       </div>
       <p className="userdash-api-soon-lead">
-        API keys are bought with USDC on Base or Arbitrum, or free on Solana Devnet. Switch the
-        dashboard to Mainnet and pick one of those vaults, or to Devnet, to get a key.
+        Paid keys ship on Base / Arbitrum (coming soon). Solana Devnet keys are free now — switch
+        the dashboard to Devnet for AI-agent setup or a Devnet API key.
       </p>
     </div>
   );
 }
 
-/** Free Devnet key: no payment, one per Solana wallet, signed with Phantom. */
+function ApiInfoTip({
+  id,
+  text,
+  open,
+  onToggle,
+}: {
+  id: string;
+  text: string;
+  open: boolean;
+  onToggle: (id: string) => void;
+}) {
+  return (
+    <span className="userdash-info">
+      <button
+        type="button"
+        className={`userdash-info-btn userdash-info-btn--letter${open ? ' active' : ''}`}
+        aria-label="More info"
+        aria-expanded={open}
+        onClick={() => onToggle(id)}
+      >
+        i
+      </button>
+      {open ? (
+        <span className="userdash-info-pop" role="note">
+          {text}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+/** Devnet: claim key up top, then MCP setup for agents. */
 function ApiKeysDevnet() {
   const [key, setKey] = useState<DevnetKeyResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [infoOpen, setInfoOpen] = useState<string | null>(null);
+  const toggleInfo = (id: string) => setInfoOpen((cur) => (cur === id ? null : id));
 
   const onClaim = async () => {
     setBusy(true);
@@ -96,54 +129,68 @@ function ApiKeysDevnet() {
 
   return (
     <div className="userdash-notes-card userdash-api-card userdash-api-page">
-      <div className="userdash-balance-header">
-        <h2 className="userdash-balance-title">Siphon API · Devnet</h2>
-        <span className="userdash-fhe-status userdash-fhe-status--ready">Free</span>
-      </div>
-      <p className="userdash-notes-description">
-        A free API key for Solana Devnet (chain {DEVNET_API_CHAIN_ID}): private deposits, swaps,
-        strategies and withdrawals from your own code. One Phantom signature, no payment.
-      </p>
-      <p className="userdash-notes-description">
-        One key per wallet: claiming again replaces your previous key, so a lost key is never a
-        lockout. The key moves nothing on its own; every deposit and withdrawal still needs your wallet.
-      </p>
-      <div className="userdash-notes-actions">
-        <button
-          type="button"
-          className="userdash-notes-button userdash-notes-button--primary"
-          onClick={() => void onClaim()}
-          disabled={busy}
-        >
-          {busy ? 'Waiting for Phantom…' : key ? 'Replace with a new key' : 'Claim free Devnet key'}
-        </button>
-      </div>
-
-      {key && (
-        <div className="userdash-api-fresh">
-          <p className="userdash-notes-description">
-            New key (copy now — plaintext is not stored again):
+      <div className="userdash-api-cols">
+        <section className="userdash-api-col" aria-labelledby="userdash-api-key-claim-title">
+          <div className="userdash-balance-header">
+            <h2 className="userdash-balance-title" id="userdash-api-key-claim-title">
+              Siphon API
+            </h2>
+            <div className="userdash-api-col-meta">
+              <span className="userdash-api-devnet-badge">Devnet · Temporary Free</span>
+              <ApiInfoTip
+                id="devnet-key"
+                open={infoOpen === 'devnet-key'}
+                onToggle={toggleInfo}
+                text={`One free key per Phantom wallet (chain ${DEVNET_API_CHAIN_ID}). Sign once — no payment. Claiming again replaces the previous key. The key moves nothing by itself; every deposit and withdrawal still needs your wallet.`}
+              />
+            </div>
+          </div>
+          <p className="userdash-api-soon-lead">
+            Private deposits, payouts, swaps and encrypted limit orders on Solana Devnet — claim a
+            Devnet API key for your own scripts.
           </p>
-          <code className="userdash-fhe-key userdash-api-fresh-key">{key.api_key}</code>
-          <div className="userdash-notes-actions">
+          {key ? (
+            <div className="userdash-api-key-slot userdash-api-key-slot--filled">
+              <code className="userdash-api-key-slot-value" title={key.api_key}>
+                {key.api_key}
+              </code>
+              <div className="userdash-api-key-slot-actions">
+                <button
+                  type="button"
+                  className="userdash-copy-button"
+                  onClick={() => void copyKey()}
+                  title="Copy key"
+                  aria-label="Copy key"
+                >
+                  <CopyIcon />
+                </button>
+                <button
+                  type="button"
+                  className="userdash-copy-button"
+                  onClick={() => void onClaim()}
+                  disabled={busy}
+                  title="Regenerate Devnet key"
+                  aria-label="Regenerate Devnet key"
+                >
+                  <RestartIcon spin={busy} />
+                </button>
+              </div>
+            </div>
+          ) : (
             <button
               type="button"
-              className="userdash-notes-button userdash-notes-button--secondary"
-              onClick={() => void copyKey()}
+              className="userdash-api-key-slot userdash-api-key-slot--claim"
+              onClick={() => void onClaim()}
+              disabled={busy}
             >
-              Copy key
+              {busy ? 'Waiting for Phantom…' : 'Claim Devnet key'}
             </button>
-          </div>
-          <p className="userdash-notes-description">
-            Send it as <code>Authorization: Bearer …</code> to{' '}
-            <code>https://api-gateway-production-41e4.up.railway.app/v1</code>{' '}
-            with <code>chain_id {DEVNET_API_CHAIN_ID}</code> · id {key.api_key_id.slice(0, 8)}…
-            {key.revoked_previous > 0 ? ' · your previous Devnet key no longer works' : ''}
-          </p>
-        </div>
-      )}
-      {error && <p className="userdash-api-error">{error}</p>}
-      <AgentSetup />
+          )}
+          {error && <p className="userdash-api-error">{error}</p>}
+        </section>
+
+        <AgentSetup infoOpen={infoOpen} onToggleInfo={toggleInfo} />
+      </div>
     </div>
   );
 }
@@ -185,63 +232,126 @@ async function copyText(text: string, what: string) {
   }
 }
 
-/** Claude Code / Codex setup for the Siphon MCP, plus prompts to start with. Devnet only. */
-function AgentSetup() {
+function CopyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function RestartIcon({ spin = false }: { spin?: boolean }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={spin ? 'userdash-icon-spin' : undefined}
+      aria-hidden
+    >
+      <polyline points="23 4 23 10 17 10" />
+      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+    </svg>
+  );
+}
+
+function CopyableCode({ text, label }: { text: string; label: string }) {
+  return (
+    <div className="userdash-agent-code-card">
+      <pre className="userdash-agent-code">{text}</pre>
+      <button
+        type="button"
+        className="userdash-copy-button userdash-agent-code-copy"
+        onClick={() => void copyText(text, label)}
+        title={`Copy ${label.toLowerCase()}`}
+        aria-label={`Copy ${label.toLowerCase()}`}
+      >
+        <CopyIcon />
+      </button>
+    </div>
+  );
+}
+
+/** Claude Code / Codex MCP setup. */
+function AgentSetup({
+  infoOpen,
+  onToggleInfo,
+}: {
+  infoOpen: string | null;
+  onToggleInfo: (id: string) => void;
+}) {
   const [agent, setAgent] = useState<keyof typeof AGENTS>('claude');
   const a = AGENTS[agent];
   return (
-    <div className="userdash-agent">
-      <h3 className="userdash-api-list-title">Use with AI agents</h3>
-      <p className="userdash-notes-description">
-        The Siphon MCP server gives Claude Code or Codex private deposits, payouts, swaps and
-        encrypted limit orders on Devnet. It runs on your machine: it makes its own Devnet wallet
-        and free key on first use, and note secrets and proofs never leave it.
-      </p>
-      <div className="userdash-fee-modes" role="tablist">
+    <section className="userdash-api-col userdash-agent" aria-labelledby="userdash-agent-title">
+      <div className="userdash-agent-header">
+        <div className="userdash-balance-header">
+          <h2 id="userdash-agent-title" className="userdash-balance-title">
+            Use with AI agents
+          </h2>
+          <ApiInfoTip
+            id="agent-setup"
+            open={infoOpen === 'agent-setup'}
+            onToggle={onToggleInfo}
+            text={`${a.after} Siphon MCP runs on your machine: first use mints a Devnet wallet and key locally — note secrets and proofs never leave the host.`}
+          />
+        </div>
+      </div>
+
+      <div className="userdash-agent-tabs" role="tablist" aria-label="Agent">
         {(Object.keys(AGENTS) as (keyof typeof AGENTS)[]).map((id) => (
-          <span
+          <button
             key={id}
+            type="button"
             role="tab"
-            tabIndex={0}
             aria-selected={agent === id}
-            className={`userdash-fee-mode${agent === id ? ' active' : ''}`}
+            className={`userdash-agent-tab${agent === id ? ' userdash-agent-tab--active' : ''}`}
             onClick={() => setAgent(id)}
-            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setAgent(id)}
           >
             {AGENTS[id].label}
-          </span>
+          </button>
         ))}
       </div>
-      <pre className="userdash-agent-code">{a.command}</pre>
-      <button type="button" className="userdash-link-button userdash-agent-copy" onClick={() => void copyText(a.command, 'Command')}>
-        Copy command
-      </button>
-      <p className="userdash-notes-description">{a.after}</p>
+
+      <CopyableCode text={a.command} label="Command" />
       {a.config && (
         <>
-          <pre className="userdash-agent-code">{a.config}</pre>
-          <button type="button" className="userdash-link-button userdash-agent-copy" onClick={() => void copyText(a.config!, 'Config')}>
-            Copy config
-          </button>
+          <span className="userdash-agent-step-label">Timeouts config</span>
+          <CopyableCode text={a.config} label="Config" />
         </>
       )}
 
-      <h3 className="userdash-api-list-title">Prompts to start with</h3>
-      <ul className="userdash-agent-prompts">
-        {STARTER_PROMPTS.map((text) => (
-          <li key={text}>
-            <span>{text}</span>
-            <button type="button" className="userdash-link-button userdash-agent-copy" onClick={() => void copyText(text, 'Prompt')}>
-              Copy
-            </button>
-          </li>
-        ))}
-      </ul>
-      <p className="userdash-notes-description">
-        Devnet test tokens only. Fund the wallet the server prints (siphon_wallet) from faucet.solana.com,
-        and keep ~/.siphon-mcp: it holds the note secrets that spend your private balance.
+      <details className="userdash-agent-prompts-details">
+        <summary>Prompt examples</summary>
+        <ul className="userdash-agent-prompts">
+          {STARTER_PROMPTS.map((text) => (
+            <li key={text}>
+              <span>{text}</span>
+              <button
+                type="button"
+                className="userdash-copy-button"
+                onClick={() => void copyText(text, 'Prompt')}
+                title="Copy prompt"
+                aria-label="Copy prompt"
+              >
+                <CopyIcon />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      <p className="userdash-notes-description userdash-agent-footnote">
+        Devnet only. Fund <code>siphon_wallet</code> from faucet.solana.com. Keep{' '}
+        <code>~/.siphon-mcp</code> — it holds the note secrets that spend your private balance.
       </p>
-    </div>
+    </section>
   );
 }
 

@@ -580,7 +580,12 @@ def settle_leg_row(leg_id: str, strategy_dict: dict) -> dict[str, Any]:
     _record(leg, result, is_leg=True)
     if result.get("status") == "EXECUTED" and is_pipe:
         try:
-            advance_pipeline(strategy_dict.get("id") or leg.strategy_id)
+            adv = advance_pipeline(strategy_dict.get("id") or leg.strategy_id)
+            if isinstance(adv, dict) and not adv.get("ok") and not adv.get("done"):
+                print(
+                    f"[pipeline] advance after leg {leg_id} failed: "
+                    f"{adv.get('status') or adv.get('code')}: {adv.get('error')}"
+                )
         except Exception:
             logger.exception("pipeline advance after leg %s failed", leg_id)
     return result

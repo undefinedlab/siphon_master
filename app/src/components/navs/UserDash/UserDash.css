@@ -2293,30 +2293,219 @@
   color: var(--build-ui-text);
 }
 
+.userdash-api-devnet-badge {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid rgba(126, 226, 168, 0.35);
+  border-radius: 0.25rem;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7ee2a8;
+  white-space: nowrap;
+}
+
+.userdash-api-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem 3.25rem;
+  align-items: start;
+  width: 100%;
+}
+.userdash-api-col {
+  min-width: 0;
+}
+.userdash-api-col-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.userdash-api-col .userdash-api-soon-lead {
+  margin-top: 0.65rem;
+  margin-bottom: 1.65rem;
+}
+.userdash-api-col .userdash-info-pop {
+  left: auto;
+  right: 0;
+  width: min(300px, 78vw);
+}
+
+.userdash-api-key-slot {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 2.75rem;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-family: var(--font-source-code), monospace;
+  font-size: 0.8rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.userdash-api-key-slot--claim {
+  justify-content: center;
+  padding: 0.7rem 1rem;
+  border: none;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.userdash-api-key-slot--claim:hover:not(:disabled) {
+  opacity: 0.92;
+}
+.userdash-api-key-slot--claim:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.userdash-api-key-slot--filled {
+  gap: 0.45rem;
+  padding: 0.35rem 0.4rem 0.35rem 0.75rem;
+  border: 1px solid rgba(126, 226, 168, 0.4);
+  background: rgba(126, 226, 168, 0.08);
+}
+.userdash-api-key-slot-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--build-ui-text);
+  font-size: 0.72rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.userdash-api-key-slot-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+.userdash-api-key-slot-actions .userdash-copy-button {
+  width: 2rem;
+  height: 2rem;
+}
+
 .userdash-agent {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+.userdash-agent-header {
+  margin-bottom: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .userdash-api-cols {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .userdash-agent {
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+.userdash-agent-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+.userdash-agent-tab {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  font-family: var(--font-source-code), monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-subtle);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.userdash-agent-tab:hover {
+  color: var(--build-ui-text-muted);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.userdash-agent-tab--active {
+  color: var(--build-ui-text);
+  border-color: rgba(198, 161, 91, 0.55);
+  background: rgba(198, 161, 91, 0.1);
+}
+.userdash-agent-step-label {
+  display: block;
+  margin: 0.75rem 0 0.35rem;
+  font-family: var(--font-source-code), monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--build-ui-text-subtle);
+}
+.userdash-agent-code-card {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  overflow: hidden;
 }
 .userdash-agent-code {
-  margin: 0.6rem 0 0.25rem;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: none;
+  background: transparent;
   color: var(--build-ui-text);
   font-family: var(--font-source-code), monospace;
   font-size: 0.75rem;
+  line-height: 1.45;
   white-space: pre-wrap;
   word-break: break-word;
 }
-.userdash-agent-copy {
-  font-size: 11px;
-  font-family: var(--font-source-code), monospace;
+.userdash-agent-code-copy {
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 2.4rem;
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.03);
+}
+.userdash-agent-code-copy:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.userdash-agent-prompts-details {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.65rem;
+}
+.userdash-agent-prompts-details > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--build-ui-text-muted);
+  user-select: none;
+}
+.userdash-agent-prompts-details > summary::-webkit-details-marker {
+  display: none;
+}
+.userdash-agent-prompts-details > summary::before {
+  content: '▸ ';
+  color: var(--build-ui-text-subtle);
+}
+.userdash-agent-prompts-details[open] > summary::before {
+  content: '▾ ';
+}
+.userdash-agent-prompts-details > summary:hover {
+  color: var(--build-ui-text);
 }
 .userdash-agent-prompts {
   list-style: none;
-  margin: 0.5rem 0 0.75rem;
+  margin: 0.65rem 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -2325,9 +2514,9 @@
 .userdash-agent-prompts li {
   display: flex;
   gap: 0.75rem;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  padding: 0.55rem 0.75rem;
+  padding: 0.55rem 0.65rem 0.55rem 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   color: var(--build-ui-text);
@@ -2337,8 +2526,14 @@
 .userdash-agent-prompts li span {
   min-width: 0;
 }
-.userdash-agent .userdash-api-list-title {
-  margin-top: 1.1rem;
+.userdash-agent-prompts li .userdash-copy-button {
+  flex-shrink: 0;
+}
+.userdash-agent-footnote {
+  margin-top: 0.85rem !important;
+  margin-bottom: 0 !important;
+  font-size: 11px !important;
+  color: var(--build-ui-text-subtle) !important;
 }
 
 .userdash-api-row {

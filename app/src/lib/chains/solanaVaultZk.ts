@@ -537,12 +537,33 @@ export async function fetchZkStateLeavesFromIndexer(): Promise<bigint[]> {
 
     // Browsers must NOT walk vault history: that is what 429'd withdraw. The API serves ASP's
     // Postgres when complete, otherwise one shared server-side rebuild cached by root.
-    const res = await fetch("/api/solana/leaves", { method: "GET" });
-    const body = (await res.json().catch(() => ({}))) as {
-      leaves?: string[];
-      error?: string;
-      message?: string;
-    };
+    // Server-side (pipeline-prove / TEE): call ASP directly — relative `/api/...` is invalid in Node
+    // (`Failed to parse URL from /api/solana/leaves`) and the leaves route also rejects non-browser origins.
+    let res: Response;
+    let body: { leaves?: string[]; error?: string; message?: string };
+    if (typeof window === "undefined") {
+      const { aspBaseUrl, aspProxyHeaders } = await import("@/lib/aspServerUrl");
+      const base = aspBaseUrl(SOLANA_DEVNET_CHAIN_ID);
+      if (!base) {
+        throw new Error("State-tree leaves unavailable (asp_unconfigured on server).");
+      }
+      res = await fetch(`${base}/solana/state/leaves?chainId=${SOLANA_DEVNET_CHAIN_ID}`, {
+        headers: aspProxyHeaders(base, {}, SOLANA_DEVNET_CHAIN_ID),
+        signal: AbortSignal.timeout(30_000),
+      });
+      body = (await res.json().catch(() => ({}))) as {
+        leaves?: string[];
+        error?: string;
+        message?: string;
+      };
+    } else {
+      res = await fetch("/api/solana/leaves", { method: "GET" });
+      body = (await res.json().catch(() => ({}))) as {
+        leaves?: string[];
+        error?: string;
+        message?: string;
+      };
+    }
     if (!res.ok || !Array.isArray(body.leaves)) {
       const why =
         [body.error, body.message].filter(Boolean).join(": ") || `HTTP ${res.status}`;
@@ -1381,11 +1402,14 @@ export async function proveSolanaPipelineHop(params: {
   const { proof, publicSignals } = await proveSpend(
     { circuit, input: built.input as unknown as Record<string, unknown> },
     async () => {
+      // Node snarkjs uses fs.open on string paths — materialise S3 wasm/zkey as bytes.
       const { loadZkey } = await import("@/lib/v3/zkeyCache");
+      const wasm = await loadZkey(zkUrl(`/zk/${circuit}/main_${circuit}.wasm`));
+      const zkey = await loadZkey(`${keys}/${circuit}/zkey_final.zkey`);
       return snarkjs.groth16.fullProve(
         built.input as unknown as Record<string, unknown>,
-        zkUrl(`/zk/${circuit}/main_${circuit}.wasm`),
-        await loadZkey(`${keys}/${circuit}/zkey_final.zkey`),
+        wasm,
+        zkey,
       );
     },
   );

@@ -25,15 +25,14 @@ const nextConfig: NextConfig = {
 
   // snarkjs is ~300MB — never bundle it into server functions.
   // /api/prove shells out to rapidsnark instead; snarkjs only runs in the browser.
-  serverExternalPackages: ["snarkjs", "ffjavascript", "circomlibjs"],
+  serverExternalPackages: ["snarkjs", "ffjavascript", "circomlibjs", "@iden3/binfileutils"],
 
   // Standalone NFT otherwise walks huge client-only trees and OOMs/times out on Railway.
+  // Keep snarkjs out of the global NFT (large); pipeline-prove pulls it via Dockerfile + Includes.
   outputFileTracingExcludes: {
     "*": [
       "node_modules/snarkjs/**/*",
       "node_modules/ffjavascript/**/*",
-      "node_modules/circomlibjs/**/*",
-      "node_modules/@iden3/**/*",
       "node_modules/three/**/*",
       "node_modules/@arcium-hq/**/*",
       "node_modules/html2canvas/**/*",
@@ -61,10 +60,21 @@ const nextConfig: NextConfig = {
     ],
   },
   // WalletConnect / Solana RPC pull `ws` at runtime; NFT often misses it.
+  // pipeline-prove: dynamic import("circomlibjs"/"snarkjs") is invisible to NFT — pin them.
   outputFileTracingIncludes: {
     "/*": ["./node_modules/ws/**/*"],
     "/dapp": ["./node_modules/ws/**/*"],
     "/dapp/*": ["./node_modules/ws/**/*"],
+    "/api/solana/pipeline-prove": [
+      "./node_modules/circomlibjs/**/*",
+      "./node_modules/wasmcurves/**/*",
+      "./node_modules/ffjavascript/**/*",
+      "./node_modules/@iden3/**/*",
+      "./node_modules/snarkjs/**/*",
+      "./node_modules/r1csfile/**/*",
+      "./node_modules/fastfile/**/*",
+      "./node_modules/circom_runtime/**/*",
+    ],
   },
 
   // Fail closed on lint/type errors when STRICT_BUILD=1 (recommended in CI).

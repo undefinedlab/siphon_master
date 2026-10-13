@@ -72,9 +72,18 @@ describe("loadZkey", () => {
     expect(await loadZkey(URL_, { caches: c.caches, fetch: f.fetch })).toBe(URL_);
   });
 
-  test("no Cache Storage at all is not an error — snarkjs fetches as before", async () => {
+  test("no Cache Storage + absolute URL fetches bytes (Node snarkjs cannot fs.open https)", async () => {
     const f = counted(new Uint8Array([4]));
-    expect(await loadZkey(URL_, { caches: undefined, fetch: f.fetch })).toBe(URL_);
+    const got = await loadZkey(URL_, { caches: undefined, fetch: f.fetch });
+    expect(got).toBeInstanceOf(Uint8Array);
+    expect(Array.from(got as Uint8Array)).toEqual([4]);
+    expect(f.calls()).toBe(1);
+  });
+
+  test("no Cache Storage + relative URL returns the path for browser snarkjs", async () => {
+    const f = counted(new Uint8Array([4]));
+    const rel = "/zk/withdraw1/zkey_final.zkey";
+    expect(await loadZkey(rel, { caches: undefined, fetch: f.fetch })).toBe(rel);
     expect(f.calls()).toBe(0);
   });
 
