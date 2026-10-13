@@ -1,0 +1,12 @@
+page-9da5ebac1464e427.js:1 
+ POST https://siphon-app.vercel.app/api/trade-executor/createStrategy 500 (Internal Server Error)
+Y	@	page-9da5ebac1464e427.js:1
+await in Y		
+eS	@	page-9da5ebac1464e427.js:1
+await in eS		
+i8	@	4bd1b696-21f374d1156f834a.js:1
+(anonymous)	@	4bd1b696-21f374d1156f834a.js:1
+nz	@	4bd1b696-21f374d1156f834a.js:1
+sn	@	4bd1b696-21f374d1156f834a.js:1
+cc	@	4bd1b696-21f374d1156f834a.js:1
+ci	@	4bd1b696-21f374d1156f834a.js:1

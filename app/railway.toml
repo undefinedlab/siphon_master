@@ -1,0 +1,8 @@
+﻿[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Avoid healthcheck on "/" — SSR of the app shell can pull snarkjs before the container is ready.
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
